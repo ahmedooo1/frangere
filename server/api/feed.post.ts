@@ -5,7 +5,7 @@ export default defineEventHandler(async (event) => {
   const secret = config.cronSecret as string | undefined
 
   // If a CRON_SECRET is configured, require it as a bearer token so this
-  // endpoint can't be spammed publicly (it consumes Anthropic API quota).
+  // endpoint can't be spammed publicly (it consumes Gemini API quota).
   if (secret) {
     const auth = getHeader(event, 'authorization')
     if (auth !== `Bearer ${secret}`) {
@@ -13,6 +13,6 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  const summary = await runPipeline(config.anthropicApiKey as string)
+  const summary = await runPipeline(config.geminiApiKey as string)
   return { ok: true, summary }
 })

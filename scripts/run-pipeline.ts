@@ -12,7 +12,7 @@ import { runPipeline } from '../server/utils/pipeline'
 
 async function main() {
   console.log(`[cron:run] Starting Frangère pipeline at ${new Date().toISOString()}`)
-  const summary = await runPipeline(process.env.ANTHROPIC_API_KEY)
+  const summary = await runPipeline(process.env.GEMINI_API_KEY)
   console.log('[cron:run] Summary:', JSON.stringify(summary, null, 2))
   process.exit(summary.errors.length > 0 ? 1 : 0)
 }

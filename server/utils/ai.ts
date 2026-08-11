@@ -1,4 +1,4 @@
-import Anthropic from '@anthropic-ai/sdk'
+import { GoogleGenerativeAI, SchemaType } from '@google/generative-ai'
 
 export type CategoryKey = 'IMMIGRATION' | 'HOUSING' | 'HEALTH' | 'EMPLOYMENT'
 
@@ -24,7 +24,7 @@ Tu dois répondre UNIQUEMENT avec un objet JSON valide, sans texte avant/après,
 
 {
   "relevant": boolean,          // true seulement si le texte concerne le droit au séjour/l'immigration, le logement, la santé, l'emploi, ou une démarche administrative pratique pour un résident. false pour tout le reste (sport, culture générale, tourisme, communiqués institutionnels sans démarche concrète, etc.)
-  "category": "IMMIGRATION" | "HOUSING" | "HEALTH" | "EMPLOYMENT" | null,  // null si relevant=false
+  "category": "IMMIGRATION" | "HOUSING" | "HEALTH" | "EMPLOYMENT" | "NONE",  // "NONE" si relevant=false
   "title_fr": string,           // titre clair et court, en français simplifié (FALC-friendly)
   "tldr_fr": [string, string, string],  // exactement 3 puces résumant l'essentiel, phrases courtes
   "steps_fr": string[],         // étapes concrètes à suivre (2 à 5 items), verbes d'action
@@ -55,7 +55,7 @@ function safeParseJson(text: string): any {
 }
 
 /**
- * Deterministic mock processor used when ANTHROPIC_API_KEY is not configured,
+ * Deterministic mock processor used when GEMINI_API_KEY is not configured,
  * so the app builds, runs, and demonstrates the full pipeline out-of-the-box.
  */
 function mockProcess(title: string, body: string): AiProcessResult {
@@ -78,24 +78,24 @@ function mockProcess(title: string, body: string): AiProcessResult {
     category: categoryGuess,
     titleAr: `[تجريبي] ${title}`,
     tldrAr: [
-      'هذا محتوى تجريبي لأنّ مفتاح Claude API غير مُفعّل بعد.',
-      'بمجرد إضافة ANTHROPIC_API_KEY، ستُترجم وتُلخّص المقالات الحقيقية تلقائياً.',
+      'هذا محتوى تجريبي لأنّ مفتاح Gemini API غير مُفعّل بعد.',
+      'بمجرد إضافة GEMINI_API_KEY، ستُترجم وتُلخّص المقالات الحقيقية تلقائياً.',
       'يمكنك تصفح الواجهة والتصنيفات والبحث بشكل كامل باستخدام هذه البيانات الوهمية.'
     ],
     stepsAr: [
-      'أضف مفتاح ANTHROPIC_API_KEY في ملف .env',
+      'أضف مفتاح GEMINI_API_KEY في ملف .env',
       'أعد تشغيل مهمة الجلب التلقائي (cron) أو نفّذها يدوياً عبر /api/feed',
       'ستظهر المقالات الحقيقية المترجمة بدلاً من هذا النص التجريبي'
     ],
     bodyAr: `ملخص تجريبي: ${shortBody}`,
     titleFr: title,
     tldrFr: [
-      'Contenu de démonstration — clé Anthropic API absente.',
-      'Ajoutez ANTHROPIC_API_KEY pour activer la traduction et le résumé réels.',
+      'Contenu de démonstration — clé Gemini API absente.',
+      'Ajoutez GEMINI_API_KEY pour activer la traduction et le résumé réels.',
       'Toute la navigation (recherche, filtres, catégories) fonctionne déjà avec ces données factices.'
     ],
     stepsFr: [
-      'Ajouter ANTHROPIC_API_KEY dans le fichier .env',
+      'Ajouter GEMINI_API_KEY dans le fichier .env',
       'Relancer la tâche planifiée ou déclencher /api/feed manuellement',
       'Les vrais articles traduits remplaceront ce texte de démonstration'
     ],
@@ -104,13 +104,43 @@ function mockProcess(title: string, body: string): AiProcessResult {
   }
 }
 
-let client: Anthropic | null = null
+let client: GoogleGenerativeAI | null = null
+let clientKey: string | null = null
 function getClient(apiKey: string) {
-  if (!client) client = new Anthropic({ apiKey })
+  if (!client || clientKey !== apiKey) {
+    client = new GoogleGenerativeAI(apiKey)
+    clientKey = apiKey
+  }
   return client
 }
 
-const MODEL = 'claude-sonnet-4-6'
+const MODEL = 'gemini-2.5-flash'
+
+// Structured output schema — Gemini enforces this shape natively, so we get
+// guaranteed valid JSON back without brittle prompt-only parsing.
+const RESPONSE_SCHEMA = {
+  type: SchemaType.OBJECT,
+  properties: {
+    relevant: { type: SchemaType.BOOLEAN },
+    category: {
+      type: SchemaType.STRING,
+      enum: ['IMMIGRATION', 'HOUSING', 'HEALTH', 'EMPLOYMENT', 'NONE'],
+      format: 'enum'
+    },
+    title_fr: { type: SchemaType.STRING },
+    tldr_fr: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING } },
+    steps_fr: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING } },
+    body_fr: { type: SchemaType.STRING },
+    title_ar: { type: SchemaType.STRING },
+    tldr_ar: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING } },
+    steps_ar: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING } },
+    body_ar: { type: SchemaType.STRING }
+  },
+  required: [
+    'relevant', 'category', 'title_fr', 'tldr_fr', 'steps_fr', 'body_fr',
+    'title_ar', 'tldr_ar', 'steps_ar', 'body_ar'
+  ]
+} as const
 
 export async function processArticleWithAi(params: {
   title: string
@@ -125,22 +155,26 @@ export async function processArticleWithAi(params: {
   }
 
   try {
-    const anthropic = getClient(apiKey)
-    const message = await anthropic.messages.create({
+    const genAI = getClient(apiKey)
+    const model = genAI.getGenerativeModel({
       model: MODEL,
-      max_tokens: 2000,
-      system: SYSTEM_PROMPT,
-      messages: [{ role: 'user', content: buildUserPrompt(title, body, sourceName) }]
+      systemInstruction: SYSTEM_PROMPT,
+      generationConfig: {
+        responseMimeType: 'application/json',
+        responseSchema: RESPONSE_SCHEMA as any,
+        temperature: 0.3
+      }
     })
 
-    const textBlock = message.content.find((b) => b.type === 'text')
-    if (!textBlock || textBlock.type !== 'text') throw new Error('No text block in AI response')
+    const result = await model.generateContent(buildUserPrompt(title, body, sourceName))
+    const text = result.response.text()
+    const parsed = safeParseJson(text)
 
-    const parsed = safeParseJson(textBlock.text)
+    const category = parsed.category === 'NONE' ? null : parsed.category ?? null
 
     return {
-      relevant: Boolean(parsed.relevant),
-      category: parsed.category ?? null,
+      relevant: Boolean(parsed.relevant) && category !== null,
+      category,
       titleAr: parsed.title_ar ?? '',
       tldrAr: Array.isArray(parsed.tldr_ar) ? parsed.tldr_ar : [],
       stepsAr: Array.isArray(parsed.steps_ar) ? parsed.steps_ar : [],
@@ -152,7 +186,7 @@ export async function processArticleWithAi(params: {
       model: MODEL
     }
   } catch (err) {
-    console.error('[ai] Claude processing failed, falling back to mock:', err)
+    console.error('[ai] Gemini processing failed, falling back to mock:', err)
     return mockProcess(title, body)
   }
 }

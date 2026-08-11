@@ -19,7 +19,7 @@ export interface PipelineRunSummary {
  * deployments that prefer an external scheduler (system crontab, Vercel Cron, etc.).
  */
 export async function runPipeline(apiKeyOverride?: string): Promise<PipelineRunSummary> {
-  const apiKey = apiKeyOverride ?? (process.env.ANTHROPIC_API_KEY || '')
+  const apiKey = apiKeyOverride ?? (process.env.GEMINI_API_KEY || '')
 
   const summary: PipelineRunSummary = {
     sourcesProcessed: 0,

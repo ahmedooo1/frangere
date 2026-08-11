@@ -36,7 +36,7 @@ export default defineNuxtConfig({
   },
 
   runtimeConfig: {
-    anthropicApiKey: process.env.ANTHROPIC_API_KEY || '',
+    geminiApiKey: process.env.GEMINI_API_KEY || '',
     databaseUrl: process.env.DATABASE_URL || '',
     cronEnabled: process.env.CRON_ENABLED || 'true',
     cronSchedule: process.env.CRON_SCHEDULE || '0 */6 * * *',

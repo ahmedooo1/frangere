@@ -27,7 +27,7 @@ export default defineNitroPlugin(() => {
   cron.schedule(finalSchedule, async () => {
     console.log('[cron] Running scheduled Frangère pipeline...')
     try {
-      const summary = await runPipeline(config.anthropicApiKey as string)
+      const summary = await runPipeline(config.geminiApiKey as string)
       console.log('[cron] Pipeline finished:', summary)
     } catch (err) {
       console.error('[cron] Pipeline run failed:', err)
