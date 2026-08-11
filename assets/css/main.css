@@ -1,0 +1,101 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-paper text-ink-800 bg-grain;
+  font-feature-settings: 'kern' 1;
+}
+
+html[dir='rtl'] body {
+  @apply font-arabic;
+}
+
+html[dir='ltr'] body {
+  font-family: 'Fraunces', ui-serif, Georgia, serif;
+}
+
+/* Keyboard focus visibility everywhere */
+:focus-visible {
+  outline: 2px solid theme('colors.stamp.600');
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ---------- Signature element: the "tampon" (official stamp) badge ---------- */
+.tampon {
+  @apply relative inline-flex items-center gap-1.5 rounded-full border-2 px-3 py-1;
+  font-family: 'Space Mono', ui-monospace, monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  transform: rotate(-2deg);
+  background: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.015) 2px,
+    rgba(0, 0, 0, 0.015) 3px
+  );
+}
+
+.tampon::before {
+  content: '';
+  @apply absolute inset-[2px] rounded-full border border-dashed;
+  border-color: currentColor;
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+.tampon--immigration { @apply border-ink-600 text-ink-600; }
+.tampon--housing { @apply border-guichet-600 text-guichet-600; }
+.tampon--health { @apply border-stamp-600 text-stamp-600; }
+.tampon--employment { @apply border-[#8A6D1F] text-[#8A6D1F]; }
+
+/* ---------- Signature element: the dossier card ---------- */
+.dossier-card {
+  @apply relative bg-paper-50 shadow-dossier rounded-sm;
+  border: 1px solid theme('colors.line');
+}
+
+.dossier-card::before {
+  /* perforated edge, mirrors to the leading edge automatically via RTL/LTR flip */
+  content: '';
+  @apply absolute top-3 bottom-3 w-px;
+  inset-inline-start: 14px;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    theme('colors.line') 0,
+    theme('colors.line') 4px,
+    transparent 4px,
+    transparent 9px
+  );
+}
+
+.dossier-tab {
+  @apply absolute -top-2.5 rounded-sm px-2.5 py-0.5 text-[0.65rem] font-bold tracking-wide text-paper-50 bg-ink-800;
+  inset-inline-start: 20px;
+}
+
+/* Utility: eyebrow / reference-number style label */
+.ref-label {
+  font-family: 'Space Mono', ui-monospace, monospace;
+  @apply text-[0.7rem] tracking-widest text-slate uppercase;
+}

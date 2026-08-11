@@ -1,0 +1,9 @@
+node_modules
+.nuxt
+.output
+.env
+dist
+*.log
+.DS_Store
+.vercel
+.netlify
