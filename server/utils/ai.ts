@@ -1,5 +1,3 @@
-import { GoogleGenerativeAI, SchemaType } from '@google/generative-ai'
-
 export type CategoryKey = 'IMMIGRATION' | 'HOUSING' | 'HEALTH' | 'EMPLOYMENT'
 
 export interface AiProcessResult {
@@ -104,43 +102,70 @@ function mockProcess(title: string, body: string): AiProcessResult {
   }
 }
 
-let client: GoogleGenerativeAI | null = null
-let clientKey: string | null = null
-function getClient(apiKey: string) {
-  if (!client || clientKey !== apiKey) {
-    client = new GoogleGenerativeAI(apiKey)
-    clientKey = apiKey
-  }
-  return client
-}
-
 const MODEL = 'gemini-flash-latest'
 
 // Structured output schema — Gemini enforces this shape natively, so we get
 // guaranteed valid JSON back without brittle prompt-only parsing.
 const RESPONSE_SCHEMA = {
-  type: SchemaType.OBJECT,
+  type: 'OBJECT',
   properties: {
-    relevant: { type: SchemaType.BOOLEAN },
+    relevant: { type: 'BOOLEAN' },
     category: {
-      type: SchemaType.STRING,
+      type: 'STRING',
       enum: ['IMMIGRATION', 'HOUSING', 'HEALTH', 'EMPLOYMENT', 'NONE'],
       format: 'enum'
     },
-    title_fr: { type: SchemaType.STRING },
-    tldr_fr: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING } },
-    steps_fr: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING } },
-    body_fr: { type: SchemaType.STRING },
-    title_ar: { type: SchemaType.STRING },
-    tldr_ar: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING } },
-    steps_ar: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING } },
-    body_ar: { type: SchemaType.STRING }
+    title_fr: { type: 'STRING' },
+    tldr_fr: { type: 'ARRAY', items: { type: 'STRING' } },
+    steps_fr: { type: 'ARRAY', items: { type: 'STRING' } },
+    body_fr: { type: 'STRING' },
+    title_ar: { type: 'STRING' },
+    tldr_ar: { type: 'ARRAY', items: { type: 'STRING' } },
+    steps_ar: { type: 'ARRAY', items: { type: 'STRING' } },
+    body_ar: { type: 'STRING' }
   },
   required: [
     'relevant', 'category', 'title_fr', 'tldr_fr', 'steps_fr', 'body_fr',
     'title_ar', 'tldr_ar', 'steps_ar', 'body_ar'
   ]
 } as const
+
+// The @google/generative-ai SDK authenticates via the "x-goog-api-key" header,
+// which gets silently dropped somewhere in Nitro's bundled server context
+// (works standalone, fails only inside the built app — 401
+// ACCESS_TOKEN_TYPE_UNSUPPORTED). Calling the REST endpoint directly with the
+// key as a query param sidesteps that and is what Google's own curl examples use.
+const API_BASE = 'https://generativelanguage.googleapis.com/v1beta'
+
+async function callGemini(apiKey: string, prompt: string) {
+  const res = await fetch(`${API_BASE}/models/${MODEL}:generateContent?key=${apiKey}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      systemInstruction: { role: 'system', parts: [{ text: SYSTEM_PROMPT }] },
+      generationConfig: {
+        responseMimeType: 'application/json',
+        responseSchema: RESPONSE_SCHEMA,
+        temperature: 0.3
+      }
+    })
+  })
+
+  if (!res.ok) {
+    const errorBody = await res.text()
+    const err: any = new Error(`[${res.status}] ${errorBody}`)
+    err.status = res.status
+    throw err
+  }
+
+  const data = await res.json()
+  const text = data.candidates?.[0]?.content?.parts?.[0]?.text
+  if (!text) {
+    throw new Error(`Unexpected Gemini response shape: ${JSON.stringify(data)}`)
+  }
+  return text
+}
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms))
@@ -166,21 +191,9 @@ export async function processArticleWithAi(params: {
     return mockProcess(title, body)
   }
 
-  const genAI = getClient(apiKey)
-  const model = genAI.getGenerativeModel({
-    model: MODEL,
-    systemInstruction: SYSTEM_PROMPT,
-    generationConfig: {
-      responseMimeType: 'application/json',
-      responseSchema: RESPONSE_SCHEMA as any,
-      temperature: 0.3
-    }
-  })
-
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
     try {
-      const result = await model.generateContent(buildUserPrompt(title, body, sourceName))
-      const text = result.response.text()
+      const text = await callGemini(apiKey, buildUserPrompt(title, body, sourceName))
       const parsed = safeParseJson(text)
 
       const category = parsed.category === 'NONE' ? null : parsed.category ?? null
