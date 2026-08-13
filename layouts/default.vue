@@ -13,13 +13,21 @@ useHead(() => ({
 <template>
   <div class="min-h-screen flex flex-col">
     <header class="sticky top-0 z-40 border-b border-line bg-paper-50/90 backdrop-blur">
+      <div class="h-1 flex" aria-hidden="true">
+        <div class="flex-1 bg-[#002395]"></div>
+        <div class="flex-1 bg-white"></div>
+        <div class="flex-1 bg-[#ED2939]"></div>
+      </div>
       <div class="mx-auto max-w-5xl px-4 sm:px-6 py-3 flex items-center justify-between">
         <NuxtLink to="/" class="flex items-center gap-2 group">
           <span
             class="flex h-9 w-9 items-center justify-center rounded-full border-2 border-ink-800 text-ink-800 font-display font-semibold text-lg group-hover:bg-ink-800 group-hover:text-paper-50 transition-colors"
           >F</span>
           <span class="flex flex-col leading-tight">
-            <span class="font-display font-semibold text-lg text-ink-800">{{ t.appName }}</span>
+            <span class="font-display font-semibold text-lg text-ink-800 flex items-center gap-1.5">
+              {{ t.appName }}
+              <span aria-hidden="true">🇫🇷</span>
+            </span>
             <span class="ref-label !text-[0.6rem] hidden sm:inline">{{ t.tagline }}</span>
           </span>
         </NuxtLink>

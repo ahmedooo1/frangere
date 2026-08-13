@@ -10,7 +10,7 @@ export default defineNuxtConfig({
 
   app: {
     head: {
-      title: 'فرانجير | Frangère — دليلك الإداري في فرنسا',
+      title: 'فرانجير | Frangère - دليلك الإداري في فرنسا',
       htmlAttrs: { lang: 'ar', dir: 'rtl' },
       meta: [
         { charset: 'utf-8' },
@@ -18,7 +18,7 @@ export default defineNuxtConfig({
         {
           name: 'description',
           content:
-            'ملخصات إدارية مترجمة وموثوقة للقادمين الجدد إلى فرنسا — السكن، الصحة، العمل، والإقامة.'
+            'ملخصات إدارية مترجمة وموثوقة للقادمين الجدد إلى فرنسا - السكن، الصحة، العمل، والإقامة.'
         }
       ],
       link: [

@@ -11,7 +11,7 @@ const dict = {
     source: 'المصدر الرسمي',
     readOriginal: 'عرض المصدر الأصلي',
     disclaimer:
-      'محتوى موثق مترجم ومُلخص تلقائياً عبر الذكاء الاصطناعي من المصادر الرسمية.',
+      'محتوى موثق مترجم ومُلخص من المصادر الرسمية، يُحدَّث بشكل دوري.',
     noResults: 'لا توجد نتائج مطابقة لبحثك حالياً.',
     noResultsHint: 'جرّب كلمة أخرى أو غيّر التصنيف.',
     loadMore: 'عرض المزيد',
@@ -19,7 +19,7 @@ const dict = {
     heroKicker: 'خدمة إخبارية إدارية',
     heroTitle: 'الإجراءات الفرنسية، بلغتك، بلا تعقيد',
     heroBody:
-      'نتابع مصادر رسمية مثل Service-Public وCAF وAmeli وFrance Travail، ونترجم ونلخّص كل تحديث يهمّ الوافدين الجدد — تلقائياً كل 6 ساعات.',
+      'نتابع مصادر رسمية مثل Service-Public وCAF وAmeli وFrance Travail، ونترجم ونلخّص كل تحديث يهمّ الوافدين الجدد - تلقائياً كل 6 ساعات.',
     switchLang: 'Français',
     updated: 'آخر تحديث',
     backHome: 'العودة إلى القائمة',
@@ -40,7 +40,7 @@ const dict = {
     source: 'Source officielle',
     readOriginal: 'Voir la source originale',
     disclaimer:
-      'Contenu vérifié, traduit et résumé automatiquement par intelligence artificielle à partir de sources officielles.',
+      'Contenu vérifié, traduit et résumé à partir de sources officielles, mis à jour régulièrement.',
     noResults: 'Aucun résultat pour votre recherche.',
     noResultsHint: 'Essayez un autre mot-clé ou une autre catégorie.',
     loadMore: 'Voir plus',
@@ -48,7 +48,7 @@ const dict = {
     heroKicker: 'Veille administrative',
     heroTitle: 'Les démarches françaises, sans jargon',
     heroBody:
-      'Nous suivons Service-Public, la CAF, Ameli et France Travail, puis traduisons et résumons chaque mise à jour utile aux nouveaux arrivants — automatiquement toutes les 6 heures.',
+      'Nous suivons Service-Public, la CAF, Ameli et France Travail, puis traduisons et résumons chaque mise à jour utile aux nouveaux arrivants - automatiquement toutes les 6 heures.',
     switchLang: 'العربية',
     updated: 'Mis à jour',
     backHome: 'Retour à la liste',

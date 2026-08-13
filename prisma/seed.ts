@@ -11,29 +11,29 @@ const categories = [
 
 const feedSources = [
   {
-    name: 'Service-Public.fr — Particuliers',
+    name: 'Service-Public.fr - Particuliers',
     organization: 'Direction de l\'information légale et administrative',
     url: 'https://www.service-public.gouv.fr/abonnements/rss/actu-actualites-particuliers.rss',
     isActive: true
   },
-  // These organizations no longer publish a public RSS feed (verified 2026-08-14 —
+  // These organizations no longer publish a public RSS feed (verified 2026-08-14 -
   // all return 404). Kept inactive rather than removed so they're easy to
   // re-enable if they add one back; the pipeline skips inactive sources entirely,
   // so no mock/placeholder content is generated in their place.
   {
-    name: 'CAF — Actualités allocataires',
+    name: 'CAF - Actualités allocataires',
     organization: 'Caisse d\'Allocations Familiales',
     url: 'https://www.caf.fr/actualites/rss.xml',
     isActive: false
   },
   {
-    name: 'Ameli — Actualités Assurance Maladie',
+    name: 'Ameli - Actualités Assurance Maladie',
     organization: 'Assurance Maladie',
     url: 'https://www.ameli.fr/rss/actualites.rss',
     isActive: false
   },
   {
-    name: 'France Travail — Actualités',
+    name: 'France Travail - Actualités',
     organization: 'France Travail (ex Pôle emploi)',
     url: 'https://www.francetravail.fr/actualites/rss.xml',
     isActive: false

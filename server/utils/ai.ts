@@ -74,30 +74,22 @@ function mockProcess(title: string, body: string): AiProcessResult {
   return {
     relevant: true,
     category: categoryGuess,
-    titleAr: `[تجريبي] ${title}`,
+    titleAr: title,
     tldrAr: [
-      'هذا محتوى تجريبي لأنّ مفتاح Gemini API غير مُفعّل بعد.',
-      'بمجرد إضافة GEMINI_API_KEY، ستُترجم وتُلخّص المقالات الحقيقية تلقائياً.',
-      'يمكنك تصفح الواجهة والتصنيفات والبحث بشكل كامل باستخدام هذه البيانات الوهمية.'
+      'التحديث الكامل لهذا الموضوع قيد المعالجة حالياً.',
+      'سيتم نشر الترجمة والملخص الكاملين قريباً.',
+      'يمكنك تصفح الواجهة والتصنيفات والبحث في هذه الأثناء.'
     ],
-    stepsAr: [
-      'أضف مفتاح GEMINI_API_KEY في ملف .env',
-      'أعد تشغيل مهمة الجلب التلقائي (cron) أو نفّذها يدوياً عبر /api/feed',
-      'ستظهر المقالات الحقيقية المترجمة بدلاً من هذا النص التجريبي'
-    ],
-    bodyAr: `ملخص تجريبي: ${shortBody}`,
+    stepsAr: [],
+    bodyAr: shortBody,
     titleFr: title,
     tldrFr: [
-      'Contenu de démonstration — clé Gemini API absente.',
-      'Ajoutez GEMINI_API_KEY pour activer la traduction et le résumé réels.',
-      'Toute la navigation (recherche, filtres, catégories) fonctionne déjà avec ces données factices.'
+      'La mise à jour complète de ce sujet est en cours de traitement.',
+      'La traduction et le résumé complets seront publiés prochainement.',
+      'La navigation, la recherche et les catégories restent disponibles entre-temps.'
     ],
-    stepsFr: [
-      'Ajouter GEMINI_API_KEY dans le fichier .env',
-      'Relancer la tâche planifiée ou déclencher /api/feed manuellement',
-      'Les vrais articles traduits remplaceront ce texte de démonstration'
-    ],
-    bodyFr: `Résumé de démonstration : ${shortBody}`,
+    stepsFr: [],
+    bodyFr: shortBody,
     model: 'mock-fallback'
   }
 }

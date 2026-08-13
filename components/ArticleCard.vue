@@ -52,7 +52,7 @@ const formattedDate = computed(() => {
       <p class="ref-label !text-paper-200 mb-2">{{ t.tldr }}</p>
       <ul class="space-y-1.5">
         <li v-for="(point, i) in tldr" :key="i" class="text-sm leading-relaxed flex gap-2">
-          <span class="opacity-60">—</span>
+          <span class="opacity-60">-</span>
           <span>{{ point }}</span>
         </li>
       </ul>
