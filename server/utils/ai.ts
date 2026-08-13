@@ -114,7 +114,7 @@ function getClient(apiKey: string) {
   return client
 }
 
-const MODEL = 'gemini-2.5-flash'
+const MODEL = 'gemini-flash-latest'
 
 // Structured output schema — Gemini enforces this shape natively, so we get
 // guaranteed valid JSON back without brittle prompt-only parsing.
@@ -142,6 +142,18 @@ const RESPONSE_SCHEMA = {
   ]
 } as const
 
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+// Free-tier quota errors include a suggested "retryDelay":"14s" in the message.
+function parseRetryDelayMs(err: any): number | null {
+  const match = String(err?.message ?? err).match(/"retryDelay":"(\d+(?:\.\d+)?)s"/)
+  return match ? Math.ceil(parseFloat(match[1]) * 1000) : null
+}
+
+const MAX_RETRIES = 3
+
 export async function processArticleWithAi(params: {
   title: string
   body: string
@@ -154,39 +166,53 @@ export async function processArticleWithAi(params: {
     return mockProcess(title, body)
   }
 
-  try {
-    const genAI = getClient(apiKey)
-    const model = genAI.getGenerativeModel({
-      model: MODEL,
-      systemInstruction: SYSTEM_PROMPT,
-      generationConfig: {
-        responseMimeType: 'application/json',
-        responseSchema: RESPONSE_SCHEMA as any,
-        temperature: 0.3
-      }
-    })
-
-    const result = await model.generateContent(buildUserPrompt(title, body, sourceName))
-    const text = result.response.text()
-    const parsed = safeParseJson(text)
-
-    const category = parsed.category === 'NONE' ? null : parsed.category ?? null
-
-    return {
-      relevant: Boolean(parsed.relevant) && category !== null,
-      category,
-      titleAr: parsed.title_ar ?? '',
-      tldrAr: Array.isArray(parsed.tldr_ar) ? parsed.tldr_ar : [],
-      stepsAr: Array.isArray(parsed.steps_ar) ? parsed.steps_ar : [],
-      bodyAr: parsed.body_ar ?? '',
-      titleFr: parsed.title_fr ?? title,
-      tldrFr: Array.isArray(parsed.tldr_fr) ? parsed.tldr_fr : [],
-      stepsFr: Array.isArray(parsed.steps_fr) ? parsed.steps_fr : [],
-      bodyFr: parsed.body_fr ?? '',
-      model: MODEL
+  const genAI = getClient(apiKey)
+  const model = genAI.getGenerativeModel({
+    model: MODEL,
+    systemInstruction: SYSTEM_PROMPT,
+    generationConfig: {
+      responseMimeType: 'application/json',
+      responseSchema: RESPONSE_SCHEMA as any,
+      temperature: 0.3
     }
-  } catch (err) {
-    console.error('[ai] Gemini processing failed, falling back to mock:', err)
-    return mockProcess(title, body)
+  })
+
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      const result = await model.generateContent(buildUserPrompt(title, body, sourceName))
+      const text = result.response.text()
+      const parsed = safeParseJson(text)
+
+      const category = parsed.category === 'NONE' ? null : parsed.category ?? null
+
+      return {
+        relevant: Boolean(parsed.relevant) && category !== null,
+        category,
+        titleAr: parsed.title_ar ?? '',
+        tldrAr: Array.isArray(parsed.tldr_ar) ? parsed.tldr_ar : [],
+        stepsAr: Array.isArray(parsed.steps_ar) ? parsed.steps_ar : [],
+        bodyAr: parsed.body_ar ?? '',
+        titleFr: parsed.title_fr ?? title,
+        tldrFr: Array.isArray(parsed.tldr_fr) ? parsed.tldr_fr : [],
+        stepsFr: Array.isArray(parsed.steps_fr) ? parsed.steps_fr : [],
+        bodyFr: parsed.body_fr ?? '',
+        model: MODEL
+      }
+    } catch (err: any) {
+      const retryDelayMs = parseRetryDelayMs(err)
+      const isRateLimit = err?.message?.includes('429') || retryDelayMs !== null
+
+      if (isRateLimit && attempt < MAX_RETRIES) {
+        const delay = retryDelayMs ?? 2 ** attempt * 1000
+        console.warn(`[ai] Rate limited, retrying in ${delay}ms (attempt ${attempt + 1}/${MAX_RETRIES})`)
+        await sleep(delay)
+        continue
+      }
+
+      console.error('[ai] Gemini processing failed, falling back to mock:', err)
+      return mockProcess(title, body)
+    }
   }
+
+  return mockProcess(title, body)
 }

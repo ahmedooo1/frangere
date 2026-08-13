@@ -42,8 +42,10 @@ export async function runPipeline(apiKeyOverride?: string): Promise<PipelineRunS
       for (const item of items) {
         summary.itemsSeen++
 
+        // Articles that previously fell back to mock (AI quota/outage) stay eligible
+        // for reprocessing on the next run instead of being permanently stuck as mock.
         const existing = await prisma.article.findUnique({ where: { guid: item.guid } })
-        if (existing) {
+        if (existing && existing.aiModel !== 'mock-fallback') {
           summary.itemsSkippedExisting++
           continue
         }
@@ -66,28 +68,31 @@ export async function runPipeline(apiKeyOverride?: string): Promise<PipelineRunS
           continue
         }
 
-        await prisma.article.create({
-          data: {
-            guid: item.guid,
-            sourceUrl: item.link,
-            originalTitleFr: item.title,
-            originalBodyFr: item.content,
-            titleAr: result.titleAr,
-            tldrAr: result.tldrAr,
-            stepsAr: result.stepsAr,
-            bodyAr: result.bodyAr,
-            titleFr: result.titleFr,
-            tldrFr: result.tldrFr,
-            stepsFr: result.stepsFr,
-            bodyFr: result.bodyFr,
-            status: 'PUBLISHED',
-            publishedAt: new Date(),
-            categoryId: category.id,
-            feedSourceId: source.id,
-            aiModel: result.model,
-            aiProcessedAt: new Date()
-          }
-        })
+        const articleData = {
+          sourceUrl: item.link,
+          originalTitleFr: item.title,
+          originalBodyFr: item.content,
+          titleAr: result.titleAr,
+          tldrAr: result.tldrAr,
+          stepsAr: result.stepsAr,
+          bodyAr: result.bodyAr,
+          titleFr: result.titleFr,
+          tldrFr: result.tldrFr,
+          stepsFr: result.stepsFr,
+          bodyFr: result.bodyFr,
+          status: 'PUBLISHED' as const,
+          publishedAt: new Date(),
+          categoryId: category.id,
+          feedSourceId: source.id,
+          aiModel: result.model,
+          aiProcessedAt: new Date()
+        }
+
+        if (existing) {
+          await prisma.article.update({ where: { guid: item.guid }, data: articleData })
+        } else {
+          await prisma.article.create({ data: { guid: item.guid, ...articleData } })
+        }
 
         summary.itemsPublished++
       }

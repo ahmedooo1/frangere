@@ -8,7 +8,7 @@ const model = defineModel<string>({ default: '' })
   <div class="relative">
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      class="absolute top-1/2 -translate-y-1/2 h-4.5 w-4.5 text-slate pointer-events-none start-4"
+      class="absolute top-1/2 -translate-y-1/2 h-4 w-4 text-slate pointer-events-none start-4"
       viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
     >
       <circle cx="11" cy="11" r="7" />
