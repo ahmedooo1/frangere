@@ -59,6 +59,12 @@ export async function runPipeline(apiKeyOverride?: string): Promise<PipelineRunS
 
         if (!result.relevant || !result.category) {
           summary.itemsFiltered++
+          // A stale mock article is only cleaned up once a *real* AI call rejects
+          // it — if this attempt itself fell back to mock (still rate-limited),
+          // the existing mock stays published and eligible for a future retry.
+          if (existing && result.model !== 'mock-fallback') {
+            await prisma.article.delete({ where: { guid: item.guid } })
+          }
           continue
         }
 
