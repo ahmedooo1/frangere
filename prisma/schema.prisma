@@ -1,5 +1,11 @@
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  // "native" covers whatever OS builds the client (GitHub Actions' runner,
+  // debian-openssl-3.0.x); the VPS this gets deployed to resolves to
+  // debian-openssl-1.1.x at runtime, so both engines need to ship in the
+  // built artifact for `npm run build` on CI to produce something that
+  // actually runs on the target machine.
+  binaryTargets = ["native", "debian-openssl-1.1.x"]
 }
 
 datasource db {
