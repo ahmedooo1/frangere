@@ -1,0 +1,65 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    env:
+      # Build-time only placeholder so `prisma generate` (via postinstall)
+      # has a syntactically valid DATABASE_URL — it never connects to it.
+      # The real value lives in .env on the VPS and is read at runtime.
+      DATABASE_URL: postgresql://placeholder:placeholder@localhost:5432/placeholder
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.20.2'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Deploy to VPS
+        env:
+          SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          HOST: ${{ secrets.DEPLOY_HOST }}
+          PORT: ${{ secrets.DEPLOY_PORT }}
+          REMOTE_USER: ${{ secrets.DEPLOY_USER }}
+          DEST: ${{ secrets.DEPLOY_PATH }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "$SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -p "$PORT" "$HOST" >> ~/.ssh/known_hosts 2>/dev/null
+
+          SSH="ssh -i ~/.ssh/deploy_key -p $PORT -o StrictHostKeyChecking=no"
+
+          # Keep the VPS git checkout in sync (ecosystem.config.cjs, docker-compose.yml,
+          # prisma/, etc.) — cheap, no install/build runs on the VPS itself.
+          $SSH "$REMOTE_USER@$HOST" "cd $DEST && git fetch origin main && git reset --hard origin/main"
+
+          # Ship the artifact actually built on the runner.
+          rsync -az --delete -e "$SSH" .output/ "$REMOTE_USER@$HOST:$DEST/.output/"
+
+          # Restart without touching already-loaded env vars (.env changes need a
+          # manual `pm2 delete frangere && pm2 start ecosystem.config.cjs` on the VPS).
+          $SSH "$REMOTE_USER@$HOST" "pm2 restart frangere"
+
+          rm -f ~/.ssh/deploy_key
