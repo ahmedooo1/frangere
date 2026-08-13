@@ -13,7 +13,7 @@ useHead(() => ({
 <template>
   <div class="min-h-screen flex flex-col">
     <header class="sticky top-0 z-40 border-b border-line bg-paper-50/90 backdrop-blur">
-      <div class="h-1 flex" aria-hidden="true">
+      <div class="h-1 flex" dir="ltr" aria-hidden="true">
         <div class="flex-1 bg-[#002395]"></div>
         <div class="flex-1 bg-white"></div>
         <div class="flex-1 bg-[#ED2939]"></div>
