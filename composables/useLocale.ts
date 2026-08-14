@@ -24,6 +24,7 @@ const dict = {
     updated: 'آخر تحديث',
     backHome: 'العودة إلى القائمة',
     usefulInfo: 'معلومات مفيدة',
+    guides: 'أدلة عملية',
     categories: {
       IMMIGRATION: 'الإقامة والهجرة',
       HOUSING: 'السكن',
@@ -54,6 +55,7 @@ const dict = {
     updated: 'Mis à jour',
     backHome: 'Retour à la liste',
     usefulInfo: 'Infos utiles',
+    guides: 'Guides pratiques',
     categories: {
       IMMIGRATION: 'Immigration & Séjour',
       HOUSING: 'Logement',

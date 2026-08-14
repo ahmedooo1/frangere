@@ -32,25 +32,27 @@ useHead(() => ({
           </span>
         </NuxtLink>
 
-        <div class="flex items-center gap-3">
-          <NuxtLink
-            to="/infos-utiles"
-            class="ref-label !text-ink-600 hover:!text-ink-800 transition-colors whitespace-nowrap"
-          >
+        <button
+          type="button"
+          class="tampon tampon--immigration hover:bg-ink-800 hover:text-paper-50 hover:border-ink-800 transition-colors cursor-pointer"
+          @click="toggleLocale"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10" />
+            <path d="M2 12h20M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20" />
+          </svg>
+          {{ t.switchLang }}
+        </button>
+      </div>
+
+      <div class="border-t border-line/70">
+        <div class="mx-auto max-w-5xl px-4 sm:px-6 py-2 flex items-center gap-4">
+          <NuxtLink to="/guides" class="ref-label !text-ink-600 hover:!text-ink-800 transition-colors whitespace-nowrap">
+            {{ t.guides }}
+          </NuxtLink>
+          <NuxtLink to="/infos-utiles" class="ref-label !text-ink-600 hover:!text-ink-800 transition-colors whitespace-nowrap">
             {{ t.usefulInfo }}
           </NuxtLink>
-
-          <button
-            type="button"
-            class="tampon tampon--immigration hover:bg-ink-800 hover:text-paper-50 hover:border-ink-800 transition-colors cursor-pointer"
-            @click="toggleLocale"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="10" />
-              <path d="M2 12h20M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20" />
-            </svg>
-            {{ t.switchLang }}
-          </button>
         </div>
       </div>
     </header>

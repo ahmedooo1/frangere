@@ -45,8 +45,8 @@ const officialLinks: OfficialLink[] = [
       </h1>
       <p class="mt-3 text-base text-slate max-w-2xl leading-relaxed">
         {{ isAr
-          ? 'معلومات ثابتة وموثوقة لا تتغيّر باستمرار، لذلك لا تمر عبر الترجمة الآلية - فقط تحديث يدوي عند الحاجة.'
-          : 'Informations stables et fiables, qui ne changent pas souvent - donc pas de traduction automatique ici, juste une mise à jour manuelle si besoin.' }}
+          ? 'كل ما تحتاجه في حالات الطوارئ أو للتواصل مع الجهات الرسمية، في مكان واحد.'
+          : 'Tout ce dont vous avez besoin en cas d\'urgence ou pour contacter les organismes officiels, au même endroit.' }}
       </p>
     </div>
 
