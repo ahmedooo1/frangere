@@ -23,6 +23,7 @@ const dict = {
     switchLang: 'Français',
     updated: 'آخر تحديث',
     backHome: 'العودة إلى القائمة',
+    usefulInfo: 'معلومات مفيدة',
     categories: {
       IMMIGRATION: 'الإقامة والهجرة',
       HOUSING: 'السكن',
@@ -52,6 +53,7 @@ const dict = {
     switchLang: 'العربية',
     updated: 'Mis à jour',
     backHome: 'Retour à la liste',
+    usefulInfo: 'Infos utiles',
     categories: {
       IMMIGRATION: 'Immigration & Séjour',
       HOUSING: 'Logement',
