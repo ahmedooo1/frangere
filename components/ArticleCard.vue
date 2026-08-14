@@ -1,6 +1,7 @@
 <script setup lang="ts">
 const { t, locale } = useLocale()
 const { shareArticle } = useShare()
+const router = useRouter()
 
 const props = defineProps<{
   article: {
@@ -38,14 +39,17 @@ const formattedDate = computed(() => {
 </script>
 
 <template>
-  <article class="dossier-card p-5 sm:p-6 ps-8 sm:ps-9 flex flex-col gap-4">
+  <article
+    class="dossier-card p-5 sm:p-6 ps-8 sm:ps-9 flex flex-col gap-4 cursor-pointer hover:shadow-lg hover:-translate-y-0.5 transition-[box-shadow,transform]"
+    @click="router.push(`/article/${article.id}`)"
+  >
     <div class="dossier-tab">{{ formattedDate }}</div>
 
     <div class="flex items-start justify-between gap-3 pt-1">
       <span class="tampon" :class="categoryClass[article.category.key]">{{ categoryLabel }}</span>
     </div>
 
-    <h2 class="font-display text-xl sm:text-2xl font-semibold text-ink-800 leading-snug">
+    <h2 class="font-display text-xl sm:text-2xl font-semibold text-ink-800 leading-snug hover:text-ink-600 transition-colors">
       {{ title }}
     </h2>
 
@@ -75,6 +79,7 @@ const formattedDate = computed(() => {
         target="_blank"
         rel="noopener noreferrer"
         class="inline-flex items-center gap-1.5 text-sm font-semibold text-guichet-600 hover:text-guichet-800 underline underline-offset-4 decoration-guichet-400/50 w-fit"
+        @click.stop
       >
         {{ t.readOriginal }}
         <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 rtl:-scale-x-100" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -86,7 +91,7 @@ const formattedDate = computed(() => {
         type="button"
         :aria-label="t.share"
         class="inline-flex items-center gap-1.5 text-sm font-semibold text-slate hover:text-ink-800 transition-colors shrink-0"
-        @click="shareArticle(article)"
+        @click.stop="shareArticle(article)"
       >
         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" />
