@@ -163,9 +163,11 @@ function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
-// Free-tier quota errors include a suggested "retryDelay":"14s" in the message.
+// Free-tier quota errors include a suggested retryDelay in the message, e.g.
+// `"retryDelay":"14s"` or, in the pretty-printed JSON body, `"retryDelay": "14s"`
+// (note the space) - the pattern needs to tolerate both.
 function parseRetryDelayMs(err: any): number | null {
-  const match = String(err?.message ?? err).match(/"retryDelay":"(\d+(?:\.\d+)?)s"/)
+  const match = String(err?.message ?? err).match(/"retryDelay":\s*"(\d+(?:\.\d+)?)s"/)
   return match ? Math.ceil(parseFloat(match[1]) * 1000) : null
 }
 
