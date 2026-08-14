@@ -46,11 +46,23 @@ useHead(() => ({
       </div>
 
       <div class="border-t border-line/70">
-        <div class="mx-auto max-w-5xl px-4 sm:px-6 py-2 flex items-center gap-4">
-          <NuxtLink to="/guides" class="ref-label !text-ink-600 hover:!text-ink-800 transition-colors whitespace-nowrap">
+        <div class="mx-auto max-w-5xl px-4 sm:px-6 py-2.5 flex items-center gap-2.5">
+          <NuxtLink
+            to="/guides"
+            class="inline-flex items-center gap-1.5 rounded-full border-2 border-ink-600 text-ink-600 px-3 py-1 text-xs font-bold uppercase tracking-wide font-mono hover:bg-ink-800 hover:text-paper-50 hover:border-ink-800 transition-colors whitespace-nowrap"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+            </svg>
             {{ t.guides }}
           </NuxtLink>
-          <NuxtLink to="/infos-utiles" class="ref-label !text-ink-600 hover:!text-ink-800 transition-colors whitespace-nowrap">
+          <NuxtLink
+            to="/infos-utiles"
+            class="inline-flex items-center gap-1.5 rounded-full border-2 border-ink-600 text-ink-600 px-3 py-1 text-xs font-bold uppercase tracking-wide font-mono hover:bg-ink-800 hover:text-paper-50 hover:border-ink-800 transition-colors whitespace-nowrap"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10" /><path d="M12 16v-4M12 8h.01" />
+            </svg>
             {{ t.usefulInfo }}
           </NuxtLink>
         </div>
