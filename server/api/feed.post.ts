@@ -13,6 +13,10 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  const summary = await runPipeline(config.geminiApiKey as string)
+  // Read live, not via config.geminiApiKey - that value is baked in at
+  // build time by Nuxt's runtimeConfig, which is empty on CI (GEMINI_API_KEY
+  // isn't set on the GitHub Actions runner), permanently forcing mock
+  // fallback regardless of what's actually configured on the server.
+  const summary = await runPipeline(process.env.GEMINI_API_KEY)
   return { ok: true, summary }
 })

@@ -27,7 +27,9 @@ export default defineNitroPlugin(() => {
   cron.schedule(finalSchedule, async () => {
     console.log('[cron] Running scheduled Frangère pipeline...')
     try {
-      const summary = await runPipeline(config.geminiApiKey as string)
+      // Read live, not via config.geminiApiKey - see the comment in
+      // server/api/feed.post.ts for why that's build-time-baked and wrong here.
+      const summary = await runPipeline(process.env.GEMINI_API_KEY)
       console.log('[cron] Pipeline finished:', summary)
     } catch (err) {
       console.error('[cron] Pipeline run failed:', err)
