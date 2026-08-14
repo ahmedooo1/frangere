@@ -19,7 +19,7 @@ const dict = {
     heroKicker: 'خدمة إخبارية إدارية',
     heroTitle: 'الإجراءات الفرنسية، بلغتك، بلا تعقيد',
     heroBody:
-      'نتابع مصادر رسمية مثل Service-Public وCAF وAmeli وFrance Travail، ونترجم ونلخّص كل تحديث يهمّ الوافدين الجدد - تلقائياً كل 6 ساعات.',
+      'نتابع مصادر رسمية مثل Service-Public وCAF وAmeli وFrance Travail، ونترجم ونلخّص كل تحديث يهمّ الوافدين الجدد.',
     switchLang: 'Français',
     updated: 'آخر تحديث',
     backHome: 'العودة إلى القائمة',
@@ -51,7 +51,7 @@ const dict = {
     heroKicker: 'Veille administrative',
     heroTitle: 'Les démarches françaises, sans jargon',
     heroBody:
-      'Nous suivons Service-Public, la CAF, Ameli et France Travail, puis traduisons et résumons chaque mise à jour utile aux nouveaux arrivants - automatiquement toutes les 6 heures.',
+      'Nous suivons Service-Public, la CAF, Ameli et France Travail, puis traduisons et résumons chaque mise à jour utile aux nouveaux arrivants.',
     switchLang: 'العربية',
     updated: 'Mis à jour',
     backHome: 'Retour à la liste',
