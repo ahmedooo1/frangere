@@ -207,11 +207,13 @@ export async function processArticleWithAi(params: {
       }
     } catch (err: any) {
       const retryDelayMs = parseRetryDelayMs(err)
-      const isRateLimit = err?.message?.includes('429') || retryDelayMs !== null
+      // 429 = rate/quota limited, 503 = Google's model temporarily overloaded
+      // ("usually temporary" per their own message) - both are worth retrying.
+      const isRetryable = err?.message?.includes('429') || err?.message?.includes('503') || retryDelayMs !== null
 
-      if (isRateLimit && attempt < MAX_RETRIES) {
+      if (isRetryable && attempt < MAX_RETRIES) {
         const delay = retryDelayMs ?? 2 ** attempt * 1000
-        console.warn(`[ai] Rate limited, retrying in ${delay}ms (attempt ${attempt + 1}/${MAX_RETRIES})`)
+        console.warn(`[ai] Retryable error, retrying in ${delay}ms (attempt ${attempt + 1}/${MAX_RETRIES})`)
         await sleep(delay)
         continue
       }
