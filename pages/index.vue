@@ -42,7 +42,9 @@ const pagination = computed(() => data.value?.pagination)
     <!-- Hero -->
     <section class="border-b border-line bg-paper-100">
       <div class="mx-auto max-w-5xl px-4 sm:px-6 py-12 sm:py-16">
-        <p class="ref-label mb-4">{{ t.heroKicker }}</p>
+        <div class="flex justify-center mb-6">
+          <span class="tampon tampon--immigration">{{ t.heroKicker }}</span>
+        </div>
         <h1 class="font-display text-3xl sm:text-5xl font-semibold text-ink-800 leading-[1.15] max-w-3xl">
           {{ t.heroTitle }}
         </h1>
