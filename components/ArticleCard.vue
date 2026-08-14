@@ -1,5 +1,6 @@
 <script setup lang="ts">
 const { t, locale } = useLocale()
+const { shareArticle } = useShare()
 
 const props = defineProps<{
   article: {
@@ -68,16 +69,31 @@ const formattedDate = computed(() => {
       </ol>
     </div>
 
-    <a
-      :href="article.sourceUrl"
-      target="_blank"
-      rel="noopener noreferrer"
-      class="mt-1 inline-flex items-center gap-1.5 text-sm font-semibold text-guichet-600 hover:text-guichet-800 underline underline-offset-4 decoration-guichet-400/50 w-fit"
-    >
-      {{ t.readOriginal }}
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 rtl:-scale-x-100" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M7 17 17 7M8 7h9v9" />
-      </svg>
-    </a>
+    <div class="flex items-center justify-between gap-3 mt-1">
+      <a
+        :href="article.sourceUrl"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="inline-flex items-center gap-1.5 text-sm font-semibold text-guichet-600 hover:text-guichet-800 underline underline-offset-4 decoration-guichet-400/50 w-fit"
+      >
+        {{ t.readOriginal }}
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 rtl:-scale-x-100" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M7 17 17 7M8 7h9v9" />
+        </svg>
+      </a>
+
+      <button
+        type="button"
+        :aria-label="t.share"
+        class="inline-flex items-center gap-1.5 text-sm font-semibold text-slate hover:text-ink-800 transition-colors shrink-0"
+        @click="shareArticle(article)"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" />
+          <path d="M8.6 13.5 15.4 17.5M15.4 6.5 8.6 10.5" />
+        </svg>
+        {{ t.share }}
+      </button>
+    </div>
   </article>
 </template>

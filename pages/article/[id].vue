@@ -1,5 +1,6 @@
 <script setup lang="ts">
 const { t, locale } = useLocale()
+const { shareArticle } = useShare()
 const route = useRoute()
 
 const { data: article, error } = await useFetch(`/api/articles/${route.params.id}`)
@@ -59,12 +60,27 @@ useHead(() => ({ title: title.value ? `${title.value} · Frangère` : 'Frangère
       </ol>
     </div>
 
-    <a
-      :href="article.sourceUrl" target="_blank" rel="noopener noreferrer"
-      class="mt-8 inline-flex items-center gap-1.5 text-sm font-semibold text-guichet-600 hover:text-guichet-800 underline underline-offset-4"
-    >
-      {{ t.readOriginal }}
-    </a>
+    <div class="mt-8 flex items-center justify-between gap-3">
+      <a
+        :href="article.sourceUrl" target="_blank" rel="noopener noreferrer"
+        class="inline-flex items-center gap-1.5 text-sm font-semibold text-guichet-600 hover:text-guichet-800 underline underline-offset-4"
+      >
+        {{ t.readOriginal }}
+      </a>
+
+      <button
+        type="button"
+        :aria-label="t.share"
+        class="inline-flex items-center gap-1.5 text-sm font-semibold text-slate hover:text-ink-800 transition-colors shrink-0"
+        @click="shareArticle(article)"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" />
+          <path d="M8.6 13.5 15.4 17.5M15.4 6.5 8.6 10.5" />
+        </svg>
+        {{ t.share }}
+      </button>
+    </div>
 
     <p class="mt-10 pt-6 border-t border-line text-xs text-slate leading-relaxed">
       {{ t.disclaimer }}
