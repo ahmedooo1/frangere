@@ -35,7 +35,7 @@ useHead(() => ({
         <div class="flex items-center gap-3">
           <NuxtLink
             to="/infos-utiles"
-            class="ref-label !text-ink-600 hover:!text-ink-800 transition-colors hidden sm:inline"
+            class="ref-label !text-ink-600 hover:!text-ink-800 transition-colors whitespace-nowrap"
           >
             {{ t.usefulInfo }}
           </NuxtLink>
