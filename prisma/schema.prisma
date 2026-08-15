@@ -88,3 +88,15 @@ model Article {
   @@index([categoryId])
   @@map("articles")
 }
+
+// A guid the AI genuinely evaluated (not a mock fallback) and judged not
+// relevant to the app's categories. RSS feeds often keep showing the same
+// "N latest items" window for days, so without this the pipeline would
+// re-spend an AI call re-rejecting the same item on every run.
+model RejectedItem {
+  id        String   @id @default(cuid())
+  guid      String   @unique
+  createdAt DateTime @default(now())
+
+  @@map("rejected_items")
+}

@@ -50,6 +50,15 @@ export async function runPipeline(apiKeyOverride?: string): Promise<PipelineRunS
           continue
         }
 
+        // Already evaluated by a real AI call and judged not relevant - the
+        // feed's "N latest items" window keeps showing it for days, no need
+        // to spend another call re-confirming the same verdict.
+        const alreadyRejected = await prisma.rejectedItem.findUnique({ where: { guid: item.guid } })
+        if (alreadyRejected) {
+          summary.itemsSkippedExisting++
+          continue
+        }
+
         const result = await processArticleWithAi({
           title: item.title,
           body: item.content,
@@ -67,6 +76,7 @@ export async function runPipeline(apiKeyOverride?: string): Promise<PipelineRunS
 
         if (!result.relevant || !result.category) {
           summary.itemsFiltered++
+          await prisma.rejectedItem.create({ data: { guid: item.guid } })
           continue
         }
 
