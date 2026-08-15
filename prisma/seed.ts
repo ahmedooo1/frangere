@@ -16,6 +16,15 @@ const feedSources = [
     url: 'https://www.service-public.gouv.fr/abonnements/rss/actu-actualites-particuliers.rss',
     isActive: true
   },
+  // Broad-scope ministry feed (transport, écologie, industrie, etc. alongside
+  // logement) - low relevance yield, but the AI filter + RejectedItem dedup
+  // mean it costs nothing to leave running for the occasional housing item.
+  {
+    name: 'Ministère de la Transition écologique et du Logement',
+    organization: 'Ministères Transition écologique, Aménagement du Territoire, Transports, Ville et Logement',
+    url: 'https://ecologie.gouv.fr/rss-actualites.xml',
+    isActive: true
+  },
   // These organizations no longer publish a public RSS feed (verified 2026-08-14 -
   // all return 404). Kept inactive rather than removed so they're easy to
   // re-enable if they add one back; the pipeline skips inactive sources entirely,
