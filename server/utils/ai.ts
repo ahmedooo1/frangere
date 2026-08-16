@@ -3,6 +3,7 @@ export type CategoryKey = 'IMMIGRATION' | 'HOUSING' | 'HEALTH' | 'EMPLOYMENT'
 export interface AiProcessResult {
   relevant: boolean
   category: CategoryKey | null
+  isDuplicate: boolean
   titleAr: string
   tldrAr: string[]
   stepsAr: string[]
@@ -16,13 +17,14 @@ export interface AiProcessResult {
 
 const SYSTEM_PROMPT = `Tu es un assistant éditorial pour "Frangère", une plateforme qui aide les nouveaux arrivants en France à comprendre les démarches administratives officielles.
 
-On te donne le titre et le corps brut d'une actualité officielle française (Service-Public.fr, CAF, Ameli, France Travail, etc.).
+On te donne le titre et le corps brut d'une actualité officielle française (Service-Public.fr, CAF, Ameli, France Travail, etc.), ainsi qu'une liste des titres des articles déjà publiés récemment sur la plateforme.
 
 Tu dois répondre UNIQUEMENT avec un objet JSON valide, sans texte avant/après, sans balises markdown, respectant exactement ce schéma :
 
 {
   "relevant": boolean,          // true seulement si le texte concerne le droit au séjour/l'immigration, le logement, la santé, l'emploi, ou une démarche administrative pratique pour un résident. false pour tout le reste (sport, culture générale, tourisme, communiqués institutionnels sans démarche concrète, etc.)
   "category": "IMMIGRATION" | "HOUSING" | "HEALTH" | "EMPLOYMENT" | "NONE",  // "NONE" si relevant=false
+  "is_duplicate": boolean,      // true si le SUJET (pas juste le titre exact) est déjà couvert par un des "titres déjà publiés" fournis ci-dessous - même décision/annonce/démarche rapportée par une source différente. false si le sujet est nouveau ou apporte une info substantiellement différente.
   "title_fr": string,           // titre clair et court, en français simplifié (FALC-friendly)
   "tldr_fr": [string, string, string],  // exactement 3 puces résumant l'essentiel, phrases courtes
   "steps_fr": string[],         // étapes concrètes à suivre (2 à 5 items), verbes d'action
@@ -37,10 +39,14 @@ Règles :
 - Simplifie toujours le jargon administratif (ex: "titre de séjour" reste tel quel car c'est un terme officiel à connaître, mais explique les procédures complexes simplement).
 - L'arabe doit être fluide et naturel, pas une traduction mot-à-mot.
 - Si l'article n'est pas pertinent (relevant=false), tu peux laisser les champs de traduction vides ("") ou tableaux vides, sauf title_fr qui doit rester rempli.
-- Ne jamais inventer d'information absente du texte source.`
+- Ne jamais inventer d'information absente du texte source.
+- Pour "is_duplicate" : compare le SUJET, pas la formulation. Deux sources peuvent rapporter la même décision gouvernementale avec des titres différents - c'est un doublon. Deux articles sur le même thème général mais des annonces distinctes (ex: deux revalorisations différentes de l'APL à des dates différentes) ne sont PAS des doublons.`
 
-function buildUserPrompt(title: string, body: string, sourceName: string) {
-  return `Source: ${sourceName}\nTitre original: ${title}\n\nCorps du texte:\n${body.slice(0, 6000)}`
+function buildUserPrompt(title: string, body: string, sourceName: string, recentTitles: string[]) {
+  const recentList = recentTitles.length
+    ? recentTitles.map((t) => `- ${t}`).join('\n')
+    : '(aucun article publié récemment)'
+  return `Titres déjà publiés récemment sur la plateforme :\n${recentList}\n\nSource: ${sourceName}\nTitre original: ${title}\n\nCorps du texte:\n${body.slice(0, 6000)}`
 }
 
 function safeParseJson(text: string): any {
@@ -74,6 +80,7 @@ function mockProcess(title: string, body: string): AiProcessResult {
   return {
     relevant: true,
     category: categoryGuess,
+    isDuplicate: false,
     titleAr: title,
     tldrAr: [
       'التحديث الكامل لهذا الموضوع قيد المعالجة حالياً.',
@@ -113,6 +120,7 @@ const RESPONSE_SCHEMA = {
       enum: ['IMMIGRATION', 'HOUSING', 'HEALTH', 'EMPLOYMENT', 'NONE'],
       format: 'enum'
     },
+    is_duplicate: { type: 'BOOLEAN' },
     title_fr: { type: 'STRING' },
     tldr_fr: { type: 'ARRAY', items: { type: 'STRING' } },
     steps_fr: { type: 'ARRAY', items: { type: 'STRING' } },
@@ -123,7 +131,7 @@ const RESPONSE_SCHEMA = {
     body_ar: { type: 'STRING' }
   },
   required: [
-    'relevant', 'category', 'title_fr', 'tldr_fr', 'steps_fr', 'body_fr',
+    'relevant', 'category', 'is_duplicate', 'title_fr', 'tldr_fr', 'steps_fr', 'body_fr',
     'title_ar', 'tldr_ar', 'steps_ar', 'body_ar'
   ]
 } as const
@@ -191,14 +199,15 @@ export async function processArticleWithAi(params: {
   body: string
   sourceName: string
   apiKey: string
+  recentTitles?: string[]
 }): Promise<AiProcessResult> {
-  const { title, body, sourceName, apiKey } = params
+  const { title, body, sourceName, apiKey, recentTitles = [] } = params
 
   if (!apiKey) {
     return mockProcess(title, body)
   }
 
-  const prompt = buildUserPrompt(title, body, sourceName)
+  const prompt = buildUserPrompt(title, body, sourceName, recentTitles)
 
   for (const model of MODELS) {
     for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
@@ -211,6 +220,7 @@ export async function processArticleWithAi(params: {
         return {
           relevant: Boolean(parsed.relevant) && category !== null,
           category,
+          isDuplicate: Boolean(parsed.is_duplicate),
           titleAr: parsed.title_ar ?? '',
           tldrAr: Array.isArray(parsed.tldr_ar) ? parsed.tldr_ar : [],
           stepsAr: Array.isArray(parsed.steps_ar) ? parsed.steps_ar : [],

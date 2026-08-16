@@ -7,10 +7,17 @@ export interface PipelineRunSummary {
   itemsSeen: number
   itemsSkippedExisting: number
   itemsFiltered: number
+  itemsDuplicate: number
   itemsPending: number
   itemsPublished: number
   errors: string[]
 }
+
+// How many days back to look, and how many titles at most to feed into the
+// duplicate-detection prompt - bounded so the prompt doesn't grow unbounded
+// as the article count increases over time.
+const DUPLICATE_LOOKBACK_DAYS = 21
+const DUPLICATE_TITLES_LIMIT = 60
 
 /**
  * Runs the full poll -> filter -> translate -> summarize -> categorize -> save pipeline.
@@ -27,6 +34,7 @@ export async function runPipeline(apiKeyOverride?: string): Promise<PipelineRunS
     itemsSeen: 0,
     itemsSkippedExisting: 0,
     itemsFiltered: 0,
+    itemsDuplicate: 0,
     itemsPending: 0,
     itemsPublished: 0,
     errors: []
@@ -35,6 +43,22 @@ export async function runPipeline(apiKeyOverride?: string): Promise<PipelineRunS
   const sources = await prisma.feedSource.findMany({ where: { isActive: true } })
   const categories = await prisma.category.findMany()
   const categoryByKey = new Map(categories.map((c) => [c.key, c]))
+
+  // Recent titles across ALL sources, so an item from source B gets flagged
+  // as a duplicate of something source A already published, even though they
+  // have different guids. Updated in-memory as this run publishes new
+  // articles, so two similar items from different sources in the SAME run
+  // are also caught, not just against past runs.
+  const recentArticles = await prisma.article.findMany({
+    where: {
+      status: 'PUBLISHED',
+      publishedAt: { gte: new Date(Date.now() - DUPLICATE_LOOKBACK_DAYS * 24 * 60 * 60 * 1000) }
+    },
+    orderBy: { publishedAt: 'desc' },
+    take: DUPLICATE_TITLES_LIMIT,
+    select: { titleFr: true, titleAr: true }
+  })
+  const recentTitles = recentArticles.map((a) => a.titleFr || a.titleAr)
 
   for (const source of sources) {
     summary.sourcesProcessed++
@@ -63,7 +87,8 @@ export async function runPipeline(apiKeyOverride?: string): Promise<PipelineRunS
           title: item.title,
           body: item.content,
           sourceName: source.name,
-          apiKey
+          apiKey,
+          recentTitles
         })
 
         // Never publish a mock placeholder - an article only appears once it
@@ -76,6 +101,15 @@ export async function runPipeline(apiKeyOverride?: string): Promise<PipelineRunS
 
         if (!result.relevant || !result.category) {
           summary.itemsFiltered++
+          await prisma.rejectedItem.create({ data: { guid: item.guid } })
+          continue
+        }
+
+        // Same topic already covered by another source (recently, or earlier
+        // in this same run) - skip publishing, but remember it as evaluated
+        // so it's not re-sent to the AI (and re-spend quota) next run.
+        if (result.isDuplicate) {
+          summary.itemsDuplicate++
           await prisma.rejectedItem.create({ data: { guid: item.guid } })
           continue
         }
@@ -110,6 +144,9 @@ export async function runPipeline(apiKeyOverride?: string): Promise<PipelineRunS
         })
 
         summary.itemsPublished++
+        // Keep the AI's duplicate check aware of what THIS run has already
+        // published, not just what existed before it started.
+        recentTitles.unshift(result.titleFr)
       }
 
       await prisma.feedSource.update({
