@@ -12,6 +12,7 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:studio": "prisma studio",
     "cron:run": "tsx scripts/run-pipeline.ts",
+    "backfill:month": "tsx scripts/backfill-month.ts",
     "lint": "eslint . --ext .ts,.vue",
     "typecheck": "nuxt typecheck"
   },

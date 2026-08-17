@@ -1,5 +1,5 @@
 import { prisma } from './prisma'
-import { fetchFeedItems } from './rss'
+import { fetchFeedItems, type FeedItem } from './rss'
 import { processArticleWithAi, type CategoryKey } from './ai'
 
 export interface PipelineRunSummary {
@@ -18,6 +18,121 @@ export interface PipelineRunSummary {
 // as the article count increases over time.
 const DUPLICATE_LOOKBACK_DAYS = 21
 const DUPLICATE_TITLES_LIMIT = 60
+
+export async function getRecentTitlesForDuplicateCheck(): Promise<string[]> {
+  const recentArticles = await prisma.article.findMany({
+    where: {
+      status: 'PUBLISHED',
+      publishedAt: { gte: new Date(Date.now() - DUPLICATE_LOOKBACK_DAYS * 24 * 60 * 60 * 1000) }
+    },
+    orderBy: { publishedAt: 'desc' },
+    take: DUPLICATE_TITLES_LIMIT,
+    select: { titleFr: true, titleAr: true }
+  })
+  return recentArticles.map((a) => a.titleFr || a.titleAr)
+}
+
+/**
+ * Evaluates a single feed item (dedup -> AI relevance/translation/duplicate
+ * check -> publish) and mutates `summary` + `recentTitles` accordingly.
+ * Shared between the live RSS loop below and scripts/backfill-month.ts, so
+ * a one-off historical import goes through exactly the same rules (never
+ * publish a mock placeholder, skip cross-source duplicates, etc.) as the
+ * recurring cron.
+ */
+export async function processFeedItem(params: {
+  item: FeedItem
+  sourceId: string
+  sourceName: string
+  apiKey: string
+  categoryByKey: Map<string, { id: string }>
+  recentTitles: string[]
+  summary: PipelineRunSummary
+}): Promise<void> {
+  const { item, sourceId, sourceName, apiKey, categoryByKey, recentTitles, summary } = params
+
+  summary.itemsSeen++
+
+  const existing = await prisma.article.findUnique({ where: { guid: item.guid } })
+  if (existing) {
+    summary.itemsSkippedExisting++
+    return
+  }
+
+  // Already evaluated by a real AI call and judged not relevant (or a
+  // duplicate) - the feed's "N latest items" window keeps showing it for
+  // days, no need to spend another call re-confirming the same verdict.
+  const alreadyRejected = await prisma.rejectedItem.findUnique({ where: { guid: item.guid } })
+  if (alreadyRejected) {
+    summary.itemsSkippedExisting++
+    return
+  }
+
+  const result = await processArticleWithAi({
+    title: item.title,
+    body: item.content,
+    sourceName,
+    apiKey,
+    recentTitles
+  })
+
+  // Never publish a mock placeholder - an article only appears once it has
+  // real translated content. Nothing is persisted here, so this item is
+  // retried from scratch on the next run.
+  if (result.model === 'mock-fallback') {
+    summary.itemsPending++
+    return
+  }
+
+  if (!result.relevant || !result.category) {
+    summary.itemsFiltered++
+    await prisma.rejectedItem.create({ data: { guid: item.guid } })
+    return
+  }
+
+  // Same topic already covered by another source (recently, or earlier in
+  // this same run) - skip publishing, but remember it as evaluated so it's
+  // not re-sent to the AI (and re-spend quota) next run.
+  if (result.isDuplicate) {
+    summary.itemsDuplicate++
+    await prisma.rejectedItem.create({ data: { guid: item.guid } })
+    return
+  }
+
+  const category = categoryByKey.get(result.category as CategoryKey)
+  if (!category) {
+    summary.errors.push(`Unknown category "${result.category}" for item ${item.guid}`)
+    return
+  }
+
+  await prisma.article.create({
+    data: {
+      guid: item.guid,
+      sourceUrl: item.link,
+      originalTitleFr: item.title,
+      originalBodyFr: item.content,
+      titleAr: result.titleAr,
+      tldrAr: result.tldrAr,
+      stepsAr: result.stepsAr,
+      bodyAr: result.bodyAr,
+      titleFr: result.titleFr,
+      tldrFr: result.tldrFr,
+      stepsFr: result.stepsFr,
+      bodyFr: result.bodyFr,
+      status: 'PUBLISHED',
+      publishedAt: new Date(),
+      categoryId: category.id,
+      feedSourceId: sourceId,
+      aiModel: result.model,
+      aiProcessedAt: new Date()
+    }
+  })
+
+  summary.itemsPublished++
+  // Keep the AI's duplicate check aware of what THIS run has already
+  // published, not just what existed before it started.
+  recentTitles.unshift(result.titleFr)
+}
 
 /**
  * Runs the full poll -> filter -> translate -> summarize -> categorize -> save pipeline.
@@ -49,16 +164,7 @@ export async function runPipeline(apiKeyOverride?: string): Promise<PipelineRunS
   // have different guids. Updated in-memory as this run publishes new
   // articles, so two similar items from different sources in the SAME run
   // are also caught, not just against past runs.
-  const recentArticles = await prisma.article.findMany({
-    where: {
-      status: 'PUBLISHED',
-      publishedAt: { gte: new Date(Date.now() - DUPLICATE_LOOKBACK_DAYS * 24 * 60 * 60 * 1000) }
-    },
-    orderBy: { publishedAt: 'desc' },
-    take: DUPLICATE_TITLES_LIMIT,
-    select: { titleFr: true, titleAr: true }
-  })
-  const recentTitles = recentArticles.map((a) => a.titleFr || a.titleAr)
+  const recentTitles = await getRecentTitlesForDuplicateCheck()
 
   for (const source of sources) {
     summary.sourcesProcessed++
@@ -66,87 +172,15 @@ export async function runPipeline(apiKeyOverride?: string): Promise<PipelineRunS
       const items = await fetchFeedItems(source.url, source.name)
 
       for (const item of items) {
-        summary.itemsSeen++
-
-        const existing = await prisma.article.findUnique({ where: { guid: item.guid } })
-        if (existing) {
-          summary.itemsSkippedExisting++
-          continue
-        }
-
-        // Already evaluated by a real AI call and judged not relevant - the
-        // feed's "N latest items" window keeps showing it for days, no need
-        // to spend another call re-confirming the same verdict.
-        const alreadyRejected = await prisma.rejectedItem.findUnique({ where: { guid: item.guid } })
-        if (alreadyRejected) {
-          summary.itemsSkippedExisting++
-          continue
-        }
-
-        const result = await processArticleWithAi({
-          title: item.title,
-          body: item.content,
+        await processFeedItem({
+          item,
+          sourceId: source.id,
           sourceName: source.name,
           apiKey,
-          recentTitles
+          categoryByKey,
+          recentTitles,
+          summary
         })
-
-        // Never publish a mock placeholder - an article only appears once it
-        // has real translated content. Nothing is persisted here, so this
-        // item is retried from scratch on the next run.
-        if (result.model === 'mock-fallback') {
-          summary.itemsPending++
-          continue
-        }
-
-        if (!result.relevant || !result.category) {
-          summary.itemsFiltered++
-          await prisma.rejectedItem.create({ data: { guid: item.guid } })
-          continue
-        }
-
-        // Same topic already covered by another source (recently, or earlier
-        // in this same run) - skip publishing, but remember it as evaluated
-        // so it's not re-sent to the AI (and re-spend quota) next run.
-        if (result.isDuplicate) {
-          summary.itemsDuplicate++
-          await prisma.rejectedItem.create({ data: { guid: item.guid } })
-          continue
-        }
-
-        const category = categoryByKey.get(result.category as CategoryKey)
-        if (!category) {
-          summary.errors.push(`Unknown category "${result.category}" for item ${item.guid}`)
-          continue
-        }
-
-        await prisma.article.create({
-          data: {
-            guid: item.guid,
-            sourceUrl: item.link,
-            originalTitleFr: item.title,
-            originalBodyFr: item.content,
-            titleAr: result.titleAr,
-            tldrAr: result.tldrAr,
-            stepsAr: result.stepsAr,
-            bodyAr: result.bodyAr,
-            titleFr: result.titleFr,
-            tldrFr: result.tldrFr,
-            stepsFr: result.stepsFr,
-            bodyFr: result.bodyFr,
-            status: 'PUBLISHED',
-            publishedAt: new Date(),
-            categoryId: category.id,
-            feedSourceId: source.id,
-            aiModel: result.model,
-            aiProcessedAt: new Date()
-          }
-        })
-
-        summary.itemsPublished++
-        // Keep the AI's duplicate check aware of what THIS run has already
-        // published, not just what existed before it started.
-        recentTitles.unshift(result.titleFr)
       }
 
       await prisma.feedSource.update({
