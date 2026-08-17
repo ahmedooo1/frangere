@@ -41,6 +41,10 @@ export default defineNuxtConfig({
     cronEnabled: process.env.CRON_ENABLED || 'true',
     cronSchedule: process.env.CRON_SCHEDULE || '0 */6 * * *',
     cronSecret: process.env.CRON_SECRET || '',
+    // Offset from the main pipeline's :00 ticks so the two never compete for
+    // the same per-minute Gemini quota at the exact same moment.
+    backfillCronEnabled: process.env.BACKFILL_CRON_ENABLED || 'true',
+    backfillCronSchedule: process.env.BACKFILL_CRON_SCHEDULE || '15 3 * * *',
     public: {
       siteName: 'Frangère',
       defaultLocale: 'ar'
