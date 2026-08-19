@@ -18,7 +18,23 @@ const categoryLabel = computed(() =>
   isAr.value ? article.value?.category.labelAr : article.value?.category.labelFr
 )
 
-useHead(() => ({ title: title.value ? `${title.value} · Frangère` : 'Frangère' }))
+const description = computed(() => tldr.value?.[0] || body.value?.slice(0, 160) || '')
+const canonicalUrl = computed(() => `https://frangere.aaweb.fr/article/${route.params.id}`)
+
+useHead(() => ({
+  title: title.value ? `${title.value} · Frangère` : 'Frangère',
+  meta: [
+    { name: 'description', content: description.value },
+    { property: 'og:type', content: 'article' },
+    { property: 'og:title', content: title.value || 'Frangère' },
+    { property: 'og:description', content: description.value },
+    { property: 'og:url', content: canonicalUrl.value },
+    { name: 'twitter:card', content: 'summary' },
+    { name: 'twitter:title', content: title.value || 'Frangère' },
+    { name: 'twitter:description', content: description.value }
+  ],
+  link: [{ rel: 'canonical', href: canonicalUrl.value }]
+}))
 </script>
 
 <template>

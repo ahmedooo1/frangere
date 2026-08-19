@@ -35,6 +35,19 @@ watch([search, category], () => {
 
 const articles = computed(() => data.value?.items || [])
 const pagination = computed(() => data.value?.pagination)
+
+useHead({
+  meta: [
+    { property: 'og:type', content: 'website' },
+    { property: 'og:title', content: 'Frangère - دليلك الإداري في فرنسا' },
+    {
+      property: 'og:description',
+      content: 'ملخصات إدارية مترجمة وموثوقة للقادمين الجدد إلى فرنسا - السكن، الصحة، العمل، والإقامة.'
+    },
+    { property: 'og:url', content: 'https://frangere.aaweb.fr/' }
+  ],
+  link: [{ rel: 'canonical', href: 'https://frangere.aaweb.fr/' }]
+})
 </script>
 
 <template>
