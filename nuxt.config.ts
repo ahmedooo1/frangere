@@ -20,7 +20,7 @@ export default defineNuxtConfig({
           content:
             'ملخصات إدارية مترجمة وموثوقة للقادمين الجدد إلى فرنسا - السكن، الصحة، العمل، والإقامة.'
         },
-        { name: 'google-site-verification', content: 'cJrYHa3TCRnWTHoBcDt6CLvhBH3Dc7czxpH2QhxfGcY' }
+        { name: 'google-site-verification', content: 'Jm3BxzLvC-acCme-bCsqcP1qNtExuhR9DfqaKkOeNZk' }
       ],
       link: [
         { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
