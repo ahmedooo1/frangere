@@ -27,6 +27,14 @@ const feedSources = [
     url: 'https://ecologie.gouv.fr/rss-actualites.xml',
     isActive: true
   },
+  // Verified 2026-08-22: real, working RSS feed. Mainly feeds COST_OF_LIVING
+  // (taxes, prices, financial aid) and occasionally LAWS.
+  {
+    name: 'Ministère de l\'Économie et des Finances',
+    organization: 'Ministère de l\'Économie, des Finances et de la Souveraineté industrielle et numérique',
+    url: 'https://www.economie.gouv.fr/rss/toutesactualites',
+    isActive: true
+  },
   // These organizations no longer publish a public RSS feed (verified 2026-08-14 -
   // all return 404). Kept inactive rather than removed so they're easy to
   // re-enable if they add one back; the pipeline skips inactive sources entirely,
