@@ -39,7 +39,7 @@ useHead(() => ({
 
 <template>
   <div v-if="article" class="mx-auto max-w-2xl px-4 sm:px-6 py-10">
-    <NuxtLink to="/" class="text-sm text-slate hover:text-ink-800 inline-flex items-center gap-1.5 mb-6">
+    <NuxtLink to="/" class="text-sm text-slate hover:text-ink-800 flex w-fit items-center gap-1.5 mb-6">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 rtl:-scale-x-100" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M15 18l-6-6 6-6" />
       </svg>
