@@ -28,7 +28,9 @@ const categoryClass: Record<string, string> = {
   IMMIGRATION: 'tampon--immigration',
   HOUSING: 'tampon--housing',
   HEALTH: 'tampon--health',
-  EMPLOYMENT: 'tampon--employment'
+  EMPLOYMENT: 'tampon--employment',
+  COST_OF_LIVING: 'tampon--cost_of_living',
+  LAWS: 'tampon--laws'
 }
 
 const formattedDate = computed(() => {

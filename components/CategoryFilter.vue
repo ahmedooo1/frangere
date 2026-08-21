@@ -11,7 +11,9 @@ const categoryStyles: Record<string, string> = {
   IMMIGRATION: 'border-ink-600 text-ink-600 data-[active=true]:bg-ink-600',
   HOUSING: 'border-guichet-600 text-guichet-600 data-[active=true]:bg-guichet-600',
   HEALTH: 'border-stamp-600 text-stamp-600 data-[active=true]:bg-stamp-600',
-  EMPLOYMENT: 'border-[#8A6D1F] text-[#8A6D1F] data-[active=true]:bg-[#8A6D1F]'
+  EMPLOYMENT: 'border-[#8A6D1F] text-[#8A6D1F] data-[active=true]:bg-[#8A6D1F]',
+  COST_OF_LIVING: 'border-[#B5442E] text-[#B5442E] data-[active=true]:bg-[#B5442E]',
+  LAWS: 'border-[#3F5B6B] text-[#3F5B6B] data-[active=true]:bg-[#3F5B6B]'
 }
 </script>
 

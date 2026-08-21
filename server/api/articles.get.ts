@@ -13,7 +13,7 @@ export default defineEventHandler(async (event) => {
     status: 'PUBLISHED'
   }
 
-  if (category && ['IMMIGRATION', 'HOUSING', 'HEALTH', 'EMPLOYMENT'].includes(category)) {
+  if (category && ['IMMIGRATION', 'HOUSING', 'HEALTH', 'EMPLOYMENT', 'COST_OF_LIVING', 'LAWS'].includes(category)) {
     where.category = { key: category as any }
   }
 

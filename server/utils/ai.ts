@@ -1,4 +1,4 @@
-export type CategoryKey = 'IMMIGRATION' | 'HOUSING' | 'HEALTH' | 'EMPLOYMENT'
+export type CategoryKey = 'IMMIGRATION' | 'HOUSING' | 'HEALTH' | 'EMPLOYMENT' | 'COST_OF_LIVING' | 'LAWS'
 
 export interface AiProcessResult {
   relevant: boolean
@@ -22,8 +22,8 @@ On te donne le titre et le corps brut d'une actualité officielle française (Se
 Tu dois répondre UNIQUEMENT avec un objet JSON valide, sans texte avant/après, sans balises markdown, respectant exactement ce schéma :
 
 {
-  "relevant": boolean,          // true seulement si le texte concerne le droit au séjour/l'immigration, le logement, la santé, l'emploi, ou une démarche administrative pratique pour un résident. false pour tout le reste (sport, culture générale, tourisme, communiqués institutionnels sans démarche concrète, etc.)
-  "category": "IMMIGRATION" | "HOUSING" | "HEALTH" | "EMPLOYMENT" | "NONE",  // "NONE" si relevant=false
+  "relevant": boolean,          // true si le texte concerne : le droit au séjour/l'immigration, le logement, la santé, l'emploi, une démarche administrative pratique pour un résident, le coût de la vie (carburant, énergie, prix, inflation, taxes qui touchent le quotidien), ou une nouvelle loi/réglementation générale qui affecte les résidents. false pour tout le reste (sport, culture générale, tourisme, communiqués institutionnels sans impact concret, politique partisane, international sans lien avec la France, etc.)
+  "category": "IMMIGRATION" | "HOUSING" | "HEALTH" | "EMPLOYMENT" | "COST_OF_LIVING" | "LAWS" | "NONE",  // "NONE" si relevant=false. "COST_OF_LIVING" pour prix/carburant/énergie/inflation/taxes du quotidien. "LAWS" pour une nouvelle loi/réglementation générale qui ne rentre pas clairement dans les autres catégories. Si un sujet correspond à la fois à LAWS et à une autre catégorie plus précise (ex: une nouvelle loi sur le logement), choisis la catégorie la plus précise plutôt que LAWS.
   "is_duplicate": boolean,      // true si le SUJET (pas juste le titre exact) est déjà couvert par un des "titres déjà publiés" fournis ci-dessous - même décision/annonce/démarche rapportée par une source différente. false si le sujet est nouveau ou apporte une info substantiellement différente.
   "title_fr": string,           // titre clair et court, en français simplifié (FALC-friendly)
   "tldr_fr": [string, string, string],  // exactement 3 puces résumant l'essentiel, phrases courtes
@@ -117,7 +117,7 @@ const RESPONSE_SCHEMA = {
     relevant: { type: 'BOOLEAN' },
     category: {
       type: 'STRING',
-      enum: ['IMMIGRATION', 'HOUSING', 'HEALTH', 'EMPLOYMENT', 'NONE'],
+      enum: ['IMMIGRATION', 'HOUSING', 'HEALTH', 'EMPLOYMENT', 'COST_OF_LIVING', 'LAWS', 'NONE'],
       format: 'enum'
     },
     is_duplicate: { type: 'BOOLEAN' },

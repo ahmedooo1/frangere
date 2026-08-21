@@ -18,6 +18,8 @@ enum CategoryKey {
   HOUSING
   HEALTH
   EMPLOYMENT
+  COST_OF_LIVING
+  LAWS
 }
 
 enum ArticleStatus {

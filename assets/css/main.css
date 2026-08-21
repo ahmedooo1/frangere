@@ -68,6 +68,8 @@ html[dir='ltr'] body {
 .tampon--housing { @apply border-guichet-600 text-guichet-600; }
 .tampon--health { @apply border-stamp-600 text-stamp-600; }
 .tampon--employment { @apply border-[#8A6D1F] text-[#8A6D1F]; }
+.tampon--cost_of_living { @apply border-[#B5442E] text-[#B5442E]; }
+.tampon--laws { @apply border-[#3F5B6B] text-[#3F5B6B]; }
 
 /* ---------- Signature element: the dossier card ---------- */
 .dossier-card {

@@ -6,7 +6,9 @@ const categories = [
   { key: 'IMMIGRATION' as const, labelFr: 'Immigration & Séjour', labelAr: 'الإقامة والهجرة' },
   { key: 'HOUSING' as const, labelFr: 'Logement', labelAr: 'السكن' },
   { key: 'HEALTH' as const, labelFr: 'Santé', labelAr: 'الصحة' },
-  { key: 'EMPLOYMENT' as const, labelFr: 'Emploi', labelAr: 'العمل' }
+  { key: 'EMPLOYMENT' as const, labelFr: 'Emploi', labelAr: 'العمل' },
+  { key: 'COST_OF_LIVING' as const, labelFr: 'Coût de la vie', labelAr: 'غلاء المعيشة' },
+  { key: 'LAWS' as const, labelFr: 'Lois & réglementation', labelAr: 'القوانين والتشريعات' }
 ]
 
 const feedSources = [

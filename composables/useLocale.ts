@@ -30,7 +30,9 @@ const dict = {
       IMMIGRATION: 'الإقامة والهجرة',
       HOUSING: 'السكن',
       HEALTH: 'الصحة',
-      EMPLOYMENT: 'العمل'
+      EMPLOYMENT: 'العمل',
+      COST_OF_LIVING: 'غلاء المعيشة',
+      LAWS: 'القوانين والتشريعات'
     } as Record<string, string>
   },
   fr: {
@@ -62,7 +64,9 @@ const dict = {
       IMMIGRATION: 'Immigration & Séjour',
       HOUSING: 'Logement',
       HEALTH: 'Santé',
-      EMPLOYMENT: 'Emploi'
+      EMPLOYMENT: 'Emploi',
+      COST_OF_LIVING: 'Coût de la vie',
+      LAWS: 'Lois & réglementation'
     } as Record<string, string>
   }
 }
