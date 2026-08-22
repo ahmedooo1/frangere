@@ -42,7 +42,7 @@ useHead({
     { property: 'og:title', content: 'Frangère - دليلك الإداري في فرنسا' },
     {
       property: 'og:description',
-      content: 'ملخصات إدارية مترجمة وموثوقة للقادمين الجدد إلى فرنسا - السكن، الصحة، العمل، والإقامة.'
+      content: 'ملخصات إدارية مترجمة وموثوقة للمقيمين في فرنسا - السكن، الصحة، العمل، الإقامة، غلاء المعيشة، والقوانين.'
     },
     { property: 'og:url', content: 'https://frangere.aaweb.fr/' }
   ],

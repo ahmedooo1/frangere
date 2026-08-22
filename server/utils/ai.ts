@@ -15,7 +15,7 @@ export interface AiProcessResult {
   model: string
 }
 
-const SYSTEM_PROMPT = `Tu es un assistant éditorial pour "Frangère", une plateforme qui aide les nouveaux arrivants en France à comprendre les démarches administratives officielles.
+const SYSTEM_PROMPT = `Tu es un assistant éditorial pour "Frangère", une plateforme qui aide les résidents en France à comprendre les démarches administratives officielles.
 
 On te donne le titre et le corps brut d'une actualité officielle française (Service-Public.fr, CAF, Ameli, France Travail, etc.), ainsi qu'une liste des titres des articles déjà publiés récemment sur la plateforme.
 
