@@ -21,9 +21,9 @@ export default {
           900: '#121D33'
         },
         paper: {
-          DEFAULT: '#F6EFE0',
-          50: '#FCFAF4',
-          100: '#F6EFE0',
+          DEFAULT: '#FFFFFF',
+          50: '#FFFFFF',
+          100: '#FFFFFF',
           200: '#EDE1C7'
         },
         stamp: {
