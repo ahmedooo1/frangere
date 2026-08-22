@@ -46,6 +46,8 @@ useHead(() => ({
       {{ t.backHome }}
     </NuxtLink>
 
+    <ArticleImage :image-url="article.imageUrl" :category-key="article.category.key" :alt="title || ''" class="mb-5" />
+
     <span class="tampon" :class="`tampon--${article.category.key.toLowerCase()}`">{{ categoryLabel }}</span>
 
     <h1 class="font-display text-3xl sm:text-4xl font-semibold text-ink-800 leading-tight mt-4">

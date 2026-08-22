@@ -13,6 +13,7 @@ const props = defineProps<{
     stepsAr: string[]
     stepsFr: string[]
     sourceUrl: string
+    imageUrl?: string | null
     publishedAt: string | null
     category: { key: string; labelAr: string; labelFr: string }
   }
@@ -45,6 +46,8 @@ const formattedDate = computed(() => {
     class="dossier-card p-5 sm:p-6 ps-8 sm:ps-9 flex flex-col gap-4 cursor-pointer hover:shadow-lg hover:-translate-y-0.5 transition-[box-shadow,transform]"
     @click="router.push(`/article/${article.id}`)"
   >
+    <ArticleImage :image-url="article.imageUrl" :category-key="article.category.key" :alt="title" />
+
     <div class="dossier-tab">{{ formattedDate }}</div>
 
     <div class="flex items-start justify-between gap-3 pt-1">

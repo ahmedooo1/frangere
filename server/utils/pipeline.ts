@@ -1,6 +1,7 @@
 import { prisma } from './prisma'
 import { fetchFeedItems, type FeedItem } from './rss'
 import { processArticleWithAi, type CategoryKey } from './ai'
+import { fetchOgImage } from './images'
 
 export interface PipelineRunSummary {
   sourcesProcessed: number
@@ -105,10 +106,17 @@ export async function processFeedItem(params: {
     return
   }
 
+  // Only fetch the image for items that actually made it through every
+  // filter above - no point spending a request on something we're not
+  // going to publish. Reuses item.imageUrl if the caller already had it
+  // (backfill), otherwise fetches it now (live RSS pipeline).
+  const imageUrl = item.imageUrl !== undefined ? item.imageUrl : await fetchOgImage(item.link)
+
   await prisma.article.create({
     data: {
       guid: item.guid,
       sourceUrl: item.link,
+      imageUrl,
       originalTitleFr: item.title,
       originalBodyFr: item.content,
       titleAr: result.titleAr,

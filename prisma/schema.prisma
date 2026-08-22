@@ -58,6 +58,7 @@ model Article {
   id               String        @id @default(cuid())
   guid             String        @unique // original RSS entry guid/link, used for de-dup
   sourceUrl        String
+  imageUrl         String?       // real illustration from the source article (og:image), if it has one
   originalTitleFr  String
   originalBodyFr   String        @db.Text
 

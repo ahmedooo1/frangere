@@ -1,6 +1,7 @@
 import { prisma } from './prisma'
 import { processFeedItem, getRecentTitlesForDuplicateCheck, type PipelineRunSummary } from './pipeline'
 import type { FeedItem } from './rss'
+import { extractOgImage } from './images'
 
 /**
  * Scrapes service-public.gouv.fr's "actualités" listing page (not the RSS
@@ -72,7 +73,7 @@ async function fetchListingLinks(url: string): Promise<{ id: string; link: strin
   return [...seen.values()]
 }
 
-async function fetchArticleDetail(link: string): Promise<{ title: string; body: string; date: Date | null } | null> {
+async function fetchArticleDetail(link: string): Promise<{ title: string; body: string; date: Date | null; imageUrl: string | null } | null> {
   const res = await fetch(link, { headers: { 'User-Agent': USER_AGENT } })
   if (!res.ok) return null
   const html = await res.text()
@@ -90,7 +91,8 @@ async function fetchArticleDetail(link: string): Promise<{ title: string; body: 
   return {
     title: titleMatch ? stripHtml(titleMatch[1]) : '',
     body: paragraphs.join('\n\n'),
-    date: dateMatch ? parseFrenchDate(dateMatch[1]) : null
+    date: dateMatch ? parseFrenchDate(dateMatch[1]) : null,
+    imageUrl: extractOgImage(html)
   }
 }
 
@@ -174,7 +176,8 @@ export async function runBackfillMonth(apiKeyOverride?: string): Promise<Backfil
         title: detail.title || id,
         link,
         content: detail.body,
-        isoDate: detail.date?.toISOString()
+        isoDate: detail.date?.toISOString(),
+        imageUrl: detail.imageUrl
       }
 
       await processFeedItem({

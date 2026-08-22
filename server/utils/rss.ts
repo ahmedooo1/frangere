@@ -6,6 +6,10 @@ export interface FeedItem {
   link: string
   content: string
   isoDate?: string
+  // Pre-fetched og:image, when the caller already had the article's HTML on
+  // hand (e.g. the backfill scraper) - avoids processFeedItem re-fetching
+  // the same page just for the image.
+  imageUrl?: string | null
 }
 
 const parser = new Parser({
