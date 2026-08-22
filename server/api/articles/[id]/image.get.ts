@@ -26,5 +26,5 @@ export default defineEventHandler(async (event) => {
 
   setResponseHeader(event, 'content-type', res.headers.get('content-type') || 'image/jpeg')
   setResponseHeader(event, 'cache-control', 'public, max-age=86400')
-  return res.arrayBuffer()
+  return Buffer.from(await res.arrayBuffer())
 })
