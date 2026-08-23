@@ -31,6 +31,9 @@ export default defineNuxtConfig({
             'ملخصات إدارية مترجمة وموثوقة للمقيمين في فرنسا - السكن، الصحة، العمل، الإقامة، غلاء المعيشة، والقوانين.'
         },
         { property: 'og:image', content: 'https://frangere.aaweb.fr/og-image.png' },
+        { property: 'og:image:width', content: '1200' },
+        { property: 'og:image:height', content: '630' },
+        { property: 'og:image:type', content: 'image/png' },
         { property: 'og:url', content: 'https://frangere.aaweb.fr' },
         { property: 'og:locale', content: 'ar_AR' },
         { name: 'twitter:card', content: 'summary_large_image' },
