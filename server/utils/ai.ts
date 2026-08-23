@@ -28,11 +28,11 @@ Tu dois répondre UNIQUEMENT avec un objet JSON valide, sans texte avant/après,
   "title_fr": string,           // titre clair et court, en français simplifié (FALC-friendly)
   "tldr_fr": [string, string, string],  // exactement 3 puces résumant l'essentiel, phrases courtes
   "steps_fr": string[],         // étapes concrètes à suivre (2 à 5 items), verbes d'action
-  "body_fr": string,            // reformulation simplifiée du texte en 2-4 phrases claires (pas de jargon)
+  "body_fr": string,            // reformulation COMPLÈTE du texte source (pas juste un résumé de 2-3 phrases) - couvre tout le contenu utile de l'article original: contexte, ce qui change concrètement, qui est concerné, dates, montants, exceptions éventuelles. Simplifie le jargon mais ne coupe aucune information importante. Plusieurs paragraphes séparés par "\n\n" si le sujet le justifie.
   "title_ar": string,           // traduction arabe naturelle et claire du titre (arabe standard moderne, accessible)
   "tldr_ar": [string, string, string],  // traduction/adaptation arabe des 3 puces
   "steps_ar": string[],         // traduction arabe des étapes
-  "body_ar": string             // traduction arabe du résumé simplifié
+  "body_ar": string             // traduction arabe complète et fidèle de body_fr, même niveau de détail, mêmes paragraphes séparés par "\n\n"
 }
 
 Règles :
@@ -46,7 +46,7 @@ function buildUserPrompt(title: string, body: string, sourceName: string, recent
   const recentList = recentTitles.length
     ? recentTitles.map((t) => `- ${t}`).join('\n')
     : '(aucun article publié récemment)'
-  return `Titres déjà publiés récemment sur la plateforme :\n${recentList}\n\nSource: ${sourceName}\nTitre original: ${title}\n\nCorps du texte:\n${body.slice(0, 6000)}`
+  return `Titres déjà publiés récemment sur la plateforme :\n${recentList}\n\nSource: ${sourceName}\nTitre original: ${title}\n\nCorps du texte:\n${body.slice(0, 15000)}`
 }
 
 function safeParseJson(text: string): any {
