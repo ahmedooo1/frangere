@@ -20,7 +20,22 @@ export default defineNuxtConfig({
           content:
             'ملخصات إدارية مترجمة وموثوقة للمقيمين في فرنسا - السكن، الصحة، العمل، الإقامة، غلاء المعيشة، والقوانين.'
         },
-        { name: 'google-site-verification', content: 'Jm3BxzLvC-acCme-bCsqcP1qNtExuhR9DfqaKkOeNZk' }
+        { name: 'google-site-verification', content: 'Jm3BxzLvC-acCme-bCsqcP1qNtExuhR9DfqaKkOeNZk' },
+        { name: 'theme-color', content: '#1B2A4A' },
+        { property: 'og:type', content: 'website' },
+        { property: 'og:site_name', content: 'Frangère' },
+        { property: 'og:title', content: 'فرانجير | Frangère - دليلك الإداري في فرنسا' },
+        {
+          property: 'og:description',
+          content:
+            'ملخصات إدارية مترجمة وموثوقة للمقيمين في فرنسا - السكن، الصحة، العمل، الإقامة، غلاء المعيشة، والقوانين.'
+        },
+        { property: 'og:image', content: 'https://frangere.aaweb.fr/og-image.png' },
+        { property: 'og:url', content: 'https://frangere.aaweb.fr' },
+        { property: 'og:locale', content: 'ar_AR' },
+        { name: 'twitter:card', content: 'summary_large_image' },
+        { name: 'twitter:title', content: 'فرانجير | Frangère - دليلك الإداري في فرنسا' },
+        { name: 'twitter:image', content: 'https://frangere.aaweb.fr/og-image.png' }
       ],
       link: [
         { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
