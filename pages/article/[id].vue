@@ -12,6 +12,7 @@ if (error.value) {
 const isAr = computed(() => locale.value === 'ar')
 const title = computed(() => (isAr.value ? article.value?.titleAr : article.value?.titleFr || article.value?.titleAr))
 const body = computed(() => (isAr.value ? article.value?.bodyAr : article.value?.bodyFr))
+const bodyParagraphs = computed(() => (body.value || '').split(/\n{2,}/).map((p) => p.trim()).filter(Boolean))
 const tldr = computed(() => (isAr.value ? article.value?.tldrAr : article.value?.tldrFr) || [])
 const steps = computed(() => (isAr.value ? article.value?.stepsAr : article.value?.stepsFr) || [])
 const categoryLabel = computed(() =>
@@ -67,7 +68,9 @@ useHead(() => ({
       </ul>
     </div>
 
-    <p class="mt-6 leading-relaxed text-ink-800">{{ body }}</p>
+    <div class="mt-6 flex flex-col gap-4">
+      <p v-for="(paragraph, i) in bodyParagraphs" :key="i" class="leading-relaxed text-ink-800">{{ paragraph }}</p>
+    </div>
 
     <div v-if="steps.length" class="mt-6">
       <p class="ref-label mb-2">{{ t.steps }}</p>
