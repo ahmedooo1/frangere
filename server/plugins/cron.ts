@@ -1,5 +1,6 @@
 import cron from 'node-cron'
 import { runPipeline } from '../utils/pipeline'
+import { getGeminiApiKeys } from '../utils/ai'
 
 // Registers a Node-cron scheduled job when the Nitro server boots.
 // Runs every 6 hours by default (CRON_SCHEDULE env override supported).
@@ -29,7 +30,7 @@ export default defineNitroPlugin(() => {
     try {
       // Read live, not via config.geminiApiKey - see the comment in
       // server/api/feed.post.ts for why that's build-time-baked and wrong here.
-      const summary = await runPipeline(process.env.GEMINI_API_KEY)
+      const summary = await runPipeline(getGeminiApiKeys())
       console.log('[cron] Pipeline finished:', summary)
     } catch (err) {
       console.error('[cron] Pipeline run failed:', err)

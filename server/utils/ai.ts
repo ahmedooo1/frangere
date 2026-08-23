@@ -194,67 +194,85 @@ function isDailyQuotaExhausted(err: any): boolean {
 
 const MAX_RETRIES = 3
 
+/**
+ * Reads GEMINI_API_KEYS (comma-separated, for rotating across multiple free-
+ * tier projects to multiply the effective daily quota) with a fallback to
+ * the single GEMINI_API_KEY for backward compatibility.
+ */
+export function getGeminiApiKeys(): string[] {
+  const multi = process.env.GEMINI_API_KEYS
+  if (multi) {
+    return multi.split(',').map((k) => k.trim()).filter(Boolean)
+  }
+  const single = process.env.GEMINI_API_KEY
+  return single ? [single] : []
+}
+
 export async function processArticleWithAi(params: {
   title: string
   body: string
   sourceName: string
-  apiKey: string
+  apiKeys: string[]
   recentTitles?: string[]
 }): Promise<AiProcessResult> {
-  const { title, body, sourceName, apiKey, recentTitles = [] } = params
+  const { title, body, sourceName, recentTitles = [] } = params
+  const apiKeys = params.apiKeys.filter(Boolean)
 
-  if (!apiKey) {
+  if (apiKeys.length === 0) {
     return mockProcess(title, body)
   }
 
   const prompt = buildUserPrompt(title, body, sourceName, recentTitles)
 
-  for (const model of MODELS) {
-    for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
-      try {
-        const text = await callGemini(apiKey, prompt, model)
-        const parsed = safeParseJson(text)
+  for (const [keyIndex, apiKey] of apiKeys.entries()) {
+    for (const model of MODELS) {
+      for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+        try {
+          const text = await callGemini(apiKey, prompt, model)
+          const parsed = safeParseJson(text)
 
-        const category = parsed.category === 'NONE' ? null : parsed.category ?? null
+          const category = parsed.category === 'NONE' ? null : parsed.category ?? null
 
-        return {
-          relevant: Boolean(parsed.relevant) && category !== null,
-          category,
-          isDuplicate: Boolean(parsed.is_duplicate),
-          titleAr: parsed.title_ar ?? '',
-          tldrAr: Array.isArray(parsed.tldr_ar) ? parsed.tldr_ar : [],
-          stepsAr: Array.isArray(parsed.steps_ar) ? parsed.steps_ar : [],
-          bodyAr: parsed.body_ar ?? '',
-          titleFr: parsed.title_fr ?? title,
-          tldrFr: Array.isArray(parsed.tldr_fr) ? parsed.tldr_fr : [],
-          stepsFr: Array.isArray(parsed.steps_fr) ? parsed.steps_fr : [],
-          bodyFr: parsed.body_fr ?? '',
-          model
-        }
-      } catch (err: any) {
-        if (isDailyQuotaExhausted(err)) {
-          console.warn(`[ai] Daily quota exhausted for ${model}, trying next model`)
+          return {
+            relevant: Boolean(parsed.relevant) && category !== null,
+            category,
+            isDuplicate: Boolean(parsed.is_duplicate),
+            titleAr: parsed.title_ar ?? '',
+            tldrAr: Array.isArray(parsed.tldr_ar) ? parsed.tldr_ar : [],
+            stepsAr: Array.isArray(parsed.steps_ar) ? parsed.steps_ar : [],
+            bodyAr: parsed.body_ar ?? '',
+            titleFr: parsed.title_fr ?? title,
+            tldrFr: Array.isArray(parsed.tldr_fr) ? parsed.tldr_fr : [],
+            stepsFr: Array.isArray(parsed.steps_fr) ? parsed.steps_fr : [],
+            bodyFr: parsed.body_fr ?? '',
+            model
+          }
+        } catch (err: any) {
+          if (isDailyQuotaExhausted(err)) {
+            console.warn(`[ai] Daily quota exhausted for ${model} on key #${keyIndex + 1}, trying next model`)
+            break
+          }
+
+          const retryDelayMs = parseRetryDelayMs(err)
+          // 429 = rate limited, 503 = Google's model temporarily overloaded
+          // ("usually temporary" per their own message) - both worth retrying.
+          const isRetryable = err?.message?.includes('429') || err?.message?.includes('503') || retryDelayMs !== null
+
+          if (isRetryable && attempt < MAX_RETRIES) {
+            const delay = retryDelayMs ?? 2 ** attempt * 1000
+            console.warn(`[ai] Retryable error on ${model} (key #${keyIndex + 1}), retrying in ${delay}ms (attempt ${attempt + 1}/${MAX_RETRIES})`)
+            await sleep(delay)
+            continue
+          }
+
+          console.error(`[ai] ${model} (key #${keyIndex + 1}) processing failed:`, err)
           break
         }
-
-        const retryDelayMs = parseRetryDelayMs(err)
-        // 429 = rate limited, 503 = Google's model temporarily overloaded
-        // ("usually temporary" per their own message) - both worth retrying.
-        const isRetryable = err?.message?.includes('429') || err?.message?.includes('503') || retryDelayMs !== null
-
-        if (isRetryable && attempt < MAX_RETRIES) {
-          const delay = retryDelayMs ?? 2 ** attempt * 1000
-          console.warn(`[ai] Retryable error on ${model}, retrying in ${delay}ms (attempt ${attempt + 1}/${MAX_RETRIES})`)
-          await sleep(delay)
-          continue
-        }
-
-        console.error(`[ai] ${model} processing failed:`, err)
-        break
       }
     }
+    console.warn(`[ai] All models exhausted on key #${keyIndex + 1}${keyIndex < apiKeys.length - 1 ? ', trying next key' : ''}`)
   }
 
-  console.error('[ai] All models exhausted, falling back to mock')
+  console.error('[ai] All keys and models exhausted, falling back to mock')
   return mockProcess(title, body)
 }

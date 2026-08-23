@@ -1,4 +1,5 @@
 import { runPipeline } from '../utils/pipeline'
+import { getGeminiApiKeys } from '../utils/ai'
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
@@ -17,6 +18,6 @@ export default defineEventHandler(async (event) => {
   // build time by Nuxt's runtimeConfig, which is empty on CI (GEMINI_API_KEY
   // isn't set on the GitHub Actions runner), permanently forcing mock
   // fallback regardless of what's actually configured on the server.
-  const summary = await runPipeline(process.env.GEMINI_API_KEY)
+  const summary = await runPipeline(getGeminiApiKeys())
   return { ok: true, summary }
 })

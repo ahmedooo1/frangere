@@ -2,6 +2,7 @@ import { prisma } from './prisma'
 import { processFeedItem, getRecentTitlesForDuplicateCheck, type PipelineRunSummary } from './pipeline'
 import type { FeedItem } from './rss'
 import { extractOgImage } from './images'
+import { getGeminiApiKeys } from './ai'
 
 /**
  * Scrapes service-public.gouv.fr's "actualités" listing page (not the RSS
@@ -101,10 +102,10 @@ export interface BackfillSummary extends PipelineRunSummary {
   itemsUnreadable: number
 }
 
-export async function runBackfillMonth(apiKeyOverride?: string): Promise<BackfillSummary> {
-  const apiKey = apiKeyOverride ?? (process.env.GEMINI_API_KEY || '')
-  if (!apiKey) {
-    throw new Error('GEMINI_API_KEY not set - refusing to run (would only produce mock placeholders)')
+export async function runBackfillMonth(apiKeysOverride?: string[]): Promise<BackfillSummary> {
+  const apiKeys = apiKeysOverride ?? getGeminiApiKeys()
+  if (apiKeys.length === 0) {
+    throw new Error('No GEMINI_API_KEYS/GEMINI_API_KEY set - refusing to run (would only produce mock placeholders)')
   }
 
   const source = await prisma.feedSource.upsert({
@@ -184,7 +185,7 @@ export async function runBackfillMonth(apiKeyOverride?: string): Promise<Backfil
         item,
         sourceId: source.id,
         sourceName: BACKFILL_SOURCE_NAME,
-        apiKey,
+        apiKeys,
         categoryByKey,
         recentTitles,
         summary

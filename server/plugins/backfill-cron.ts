@@ -1,5 +1,6 @@
 import cron from 'node-cron'
 import { runBackfillMonth } from '../utils/backfill'
+import { getGeminiApiKeys } from '../utils/ai'
 
 // Registers a once-daily scheduled job that catches up on articles the live
 // RSS cron's rolling 10-item window misses (service-public.gouv.fr's
@@ -29,7 +30,7 @@ export default defineNitroPlugin(() => {
   cron.schedule(finalSchedule, async () => {
     console.log('[backfill-cron] Running scheduled backfill...')
     try {
-      const summary = await runBackfillMonth(process.env.GEMINI_API_KEY)
+      const summary = await runBackfillMonth(getGeminiApiKeys())
       console.log('[backfill-cron] Backfill finished:', summary)
     } catch (err) {
       console.error('[backfill-cron] Backfill run failed:', err)

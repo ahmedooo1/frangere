@@ -1,6 +1,6 @@
 import { prisma } from './prisma'
 import { fetchFeedItems, type FeedItem } from './rss'
-import { processArticleWithAi, type CategoryKey } from './ai'
+import { processArticleWithAi, getGeminiApiKeys, type CategoryKey } from './ai'
 import { fetchOgImage } from './images'
 
 export interface PipelineRunSummary {
@@ -45,12 +45,12 @@ export async function processFeedItem(params: {
   item: FeedItem
   sourceId: string
   sourceName: string
-  apiKey: string
+  apiKeys: string[]
   categoryByKey: Map<string, { id: string }>
   recentTitles: string[]
   summary: PipelineRunSummary
 }): Promise<void> {
-  const { item, sourceId, sourceName, apiKey, categoryByKey, recentTitles, summary } = params
+  const { item, sourceId, sourceName, apiKeys, categoryByKey, recentTitles, summary } = params
 
   summary.itemsSeen++
 
@@ -73,7 +73,7 @@ export async function processFeedItem(params: {
     title: item.title,
     body: item.content,
     sourceName,
-    apiKey,
+    apiKeys,
     recentTitles
   })
 
@@ -144,13 +144,14 @@ export async function processFeedItem(params: {
 
 /**
  * Runs the full poll -> filter -> translate -> summarize -> categorize -> save pipeline.
- * Accepts an explicit apiKey so it can be called both from inside Nitro (via the
- * cron plugin / API route, using useRuntimeConfig) and from the standalone
- * scripts/run-pipeline.ts entrypoint (using process.env directly), e.g. for
- * deployments that prefer an external scheduler (system crontab, Vercel Cron, etc.).
+ * Accepts explicit apiKeys so it can be called both from inside Nitro (via the
+ * cron plugin / API route) and from the standalone scripts/run-pipeline.ts
+ * entrypoint, e.g. for deployments that prefer an external scheduler (system
+ * crontab, Vercel Cron, etc.). Defaults to reading GEMINI_API_KEYS/GEMINI_API_KEY
+ * live from process.env when not given.
  */
-export async function runPipeline(apiKeyOverride?: string): Promise<PipelineRunSummary> {
-  const apiKey = apiKeyOverride ?? (process.env.GEMINI_API_KEY || '')
+export async function runPipeline(apiKeysOverride?: string[]): Promise<PipelineRunSummary> {
+  const apiKeys = apiKeysOverride ?? getGeminiApiKeys()
 
   const summary: PipelineRunSummary = {
     sourcesProcessed: 0,
@@ -184,7 +185,7 @@ export async function runPipeline(apiKeyOverride?: string): Promise<PipelineRunS
           item,
           sourceId: source.id,
           sourceName: source.name,
-          apiKey,
+          apiKeys,
           categoryByKey,
           recentTitles,
           summary
