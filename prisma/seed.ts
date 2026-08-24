@@ -54,6 +54,19 @@ const feedSources = [
     url: 'https://www.assemblee-nationale.fr/dyn/rss/communiques-de-presse.xml',
     isActive: true
   },
+  // franceinfo (France Télévisions) is a PUBLIC SERVICE broadcaster, not a
+  // private/commercial outlet - publicly funded with a legal neutrality
+  // obligation, closer in spirit to the .gouv.fr sources above than to
+  // opinion-driven private press. Scoped to the Politique section only
+  // (not the general headlines feed) to keep it targeted at GOVERNANCE
+  // content instead of adding sport/culture/international noise the AI
+  // filter would just reject anyway.
+  {
+    name: 'franceinfo - Politique',
+    organization: 'France Télévisions (service public)',
+    url: 'https://www.francetvinfo.fr/politique.rss',
+    isActive: true
+  },
   // These organizations no longer publish a public RSS feed (verified 2026-08-14 -
   // all return 404). Kept inactive rather than removed so they're easy to
   // re-enable if they add one back; the pipeline skips inactive sources entirely,
