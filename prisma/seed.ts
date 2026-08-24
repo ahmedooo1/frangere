@@ -8,7 +8,8 @@ const categories = [
   { key: 'HEALTH' as const, labelFr: 'Santé', labelAr: 'الصحة' },
   { key: 'EMPLOYMENT' as const, labelFr: 'Emploi', labelAr: 'العمل' },
   { key: 'COST_OF_LIVING' as const, labelFr: 'Coût de la vie', labelAr: 'غلاء المعيشة' },
-  { key: 'LAWS' as const, labelFr: 'Lois & réglementation', labelAr: 'القوانين والتشريعات' }
+  { key: 'LAWS' as const, labelFr: 'Lois & réglementation', labelAr: 'القوانين والتشريعات' },
+  { key: 'GOVERNANCE' as const, labelFr: 'Politique & Administration', labelAr: 'السياسة والإدارة' }
 ]
 
 const feedSources = [

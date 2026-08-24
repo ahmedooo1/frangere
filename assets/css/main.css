@@ -70,6 +70,7 @@ html[dir='ltr'] body {
 .tampon--employment { @apply border-[#8A6D1F] text-[#8A6D1F]; }
 .tampon--cost_of_living { @apply border-[#B5442E] text-[#B5442E]; }
 .tampon--laws { @apply border-[#3F5B6B] text-[#3F5B6B]; }
+.tampon--governance { @apply border-[#5B3A7D] text-[#5B3A7D]; }
 
 /* ---------- Signature element: the dossier card ---------- */
 .dossier-card {

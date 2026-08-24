@@ -20,6 +20,7 @@ enum CategoryKey {
   EMPLOYMENT
   COST_OF_LIVING
   LAWS
+  GOVERNANCE
 }
 
 enum ArticleStatus {
@@ -30,11 +31,11 @@ enum ArticleStatus {
 }
 
 model Category {
-  id        String      @id @default(cuid())
-  key       CategoryKey @unique
-  labelFr   String
-  labelAr   String
-  articles  Article[]
+  id       String      @id @default(cuid())
+  key      CategoryKey @unique
+  labelFr  String
+  labelAr  String
+  articles Article[]
 
   @@map("categories")
 }
@@ -55,37 +56,37 @@ model FeedSource {
 }
 
 model Article {
-  id               String        @id @default(cuid())
-  guid             String        @unique // original RSS entry guid/link, used for de-dup
-  sourceUrl        String
-  imageUrl         String?       // real illustration from the source article (og:image), if it has one
-  originalTitleFr  String
-  originalBodyFr   String        @db.Text
+  id              String  @id @default(cuid())
+  guid            String  @unique // original RSS entry guid/link, used for de-dup
+  sourceUrl       String
+  imageUrl        String? // real illustration from the source article (og:image), if it has one
+  originalTitleFr String
+  originalBodyFr  String  @db.Text
 
-  titleAr          String
-  tldrAr           String[]      // 3 bullet-point summary
-  stepsAr          String[]      // actionable steps
-  bodyAr           String        @db.Text
+  titleAr String
+  tldrAr  String[] // 3 bullet-point summary
+  stepsAr String[] // actionable steps
+  bodyAr  String   @db.Text
 
-  titleFr          String?
-  tldrFr           String[]
-  stepsFr          String[]
-  bodyFr           String?       @db.Text
+  titleFr String?
+  tldrFr  String[]
+  stepsFr String[]
+  bodyFr  String?  @db.Text
 
-  status           ArticleStatus @default(DRAFT)
-  publishedAt      DateTime?
+  status      ArticleStatus @default(DRAFT)
+  publishedAt DateTime?
 
-  category         Category      @relation(fields: [categoryId], references: [id])
-  categoryId       String
+  category   Category @relation(fields: [categoryId], references: [id])
+  categoryId String
 
-  feedSource       FeedSource    @relation(fields: [feedSourceId], references: [id])
-  feedSourceId     String
+  feedSource   FeedSource @relation(fields: [feedSourceId], references: [id])
+  feedSourceId String
 
-  aiModel          String?
-  aiProcessedAt    DateTime?
+  aiModel       String?
+  aiProcessedAt DateTime?
 
-  createdAt        DateTime      @default(now())
-  updatedAt        DateTime      @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([status, publishedAt])
   @@index([categoryId])

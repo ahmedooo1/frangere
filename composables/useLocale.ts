@@ -19,7 +19,7 @@ const dict = {
     heroKicker: 'خدمة إخبارية إدارية',
     heroTitle: 'الإجراءات الفرنسية، بلغتك، بلا تعقيد',
     heroBody:
-      'نتابع مصادر حكومية رسمية فرنسية، ونترجم ونلخّص كل تحديث يهمّ المقيمين في فرنسا: الإقامة، السكن، الصحة، العمل، غلاء المعيشة، والقوانين الجديدة.',
+      'نتابع مصادر حكومية رسمية فرنسية، ونترجم ونلخّص كل تحديث يهمّ المقيمين في فرنسا: الإقامة، السكن، الصحة، العمل، غلاء المعيشة، القوانين الجديدة، والسياسة والإدارة.',
     switchLang: 'Français',
     updated: 'آخر تحديث',
     backHome: 'العودة إلى القائمة',
@@ -32,7 +32,8 @@ const dict = {
       HEALTH: 'الصحة',
       EMPLOYMENT: 'العمل',
       COST_OF_LIVING: 'غلاء المعيشة',
-      LAWS: 'القوانين والتشريعات'
+      LAWS: 'القوانين والتشريعات',
+      GOVERNANCE: 'السياسة والإدارة'
     } as Record<string, string>
   },
   fr: {
@@ -53,7 +54,7 @@ const dict = {
     heroKicker: 'Veille administrative',
     heroTitle: 'Les démarches françaises, sans jargon',
     heroBody:
-      'Nous suivons des sources gouvernementales officielles françaises, puis traduisons et résumons chaque mise à jour utile aux résidents en France : séjour, logement, santé, emploi, coût de la vie et nouvelles lois.',
+      'Nous suivons des sources gouvernementales officielles françaises, puis traduisons et résumons chaque mise à jour utile aux résidents en France : séjour, logement, santé, emploi, coût de la vie, nouvelles lois, et politique & administration.',
     switchLang: 'العربية',
     updated: 'Mis à jour',
     backHome: 'Retour à la liste',
@@ -66,7 +67,8 @@ const dict = {
       HEALTH: 'Santé',
       EMPLOYMENT: 'Emploi',
       COST_OF_LIVING: 'Coût de la vie',
-      LAWS: 'Lois & réglementation'
+      LAWS: 'Lois & réglementation',
+      GOVERNANCE: 'Politique & Administration'
     } as Record<string, string>
   }
 }
