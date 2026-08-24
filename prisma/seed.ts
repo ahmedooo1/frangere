@@ -36,6 +36,24 @@ const feedSources = [
     url: 'https://www.economie.gouv.fr/rss/toutesactualites',
     isActive: true
   },
+  // Verified 2026-08-24: real, working feeds - added for the new GOVERNANCE
+  // category (elections, political appointments, decisions/rivalries
+  // between elected officials). Most obvious official sources for this beat
+  // (vie-publique.fr, gouvernement.fr/info.gouv.fr, interieur.gouv.fr,
+  // legifrance.gouv.fr) are bot-protected (Cloudflare/Datadome JS challenge)
+  // and unreachable by a plain server-side fetch - these two are not.
+  {
+    name: 'Sénat - Communiqués de presse',
+    organization: 'Sénat',
+    url: 'https://www.senat.fr/rss/presse.xml',
+    isActive: true
+  },
+  {
+    name: 'Assemblée nationale - Communiqués de presse',
+    organization: 'Assemblée nationale',
+    url: 'https://www.assemblee-nationale.fr/dyn/rss/communiques-de-presse.xml',
+    isActive: true
+  },
   // These organizations no longer publish a public RSS feed (verified 2026-08-14 -
   // all return 404). Kept inactive rather than removed so they're easy to
   // re-enable if they add one back; the pipeline skips inactive sources entirely,
