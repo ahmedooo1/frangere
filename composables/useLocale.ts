@@ -26,6 +26,7 @@ const dict = {
     usefulInfo: 'معلومات مفيدة',
     guides: 'أدلة عملية',
     share: 'مشاركة',
+    madeBy: 'صُنع بواسطة',
     categories: {
       IMMIGRATION: 'الإقامة والهجرة',
       HOUSING: 'السكن',
@@ -61,6 +62,7 @@ const dict = {
     usefulInfo: 'Infos utiles',
     guides: 'Guides pratiques',
     share: 'Partager',
+    madeBy: 'Créé par',
     categories: {
       IMMIGRATION: 'Immigration & Séjour',
       HOUSING: 'Logement',

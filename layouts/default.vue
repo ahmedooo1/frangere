@@ -79,6 +79,15 @@ useHead(() => ({
         <p class="text-sm text-slate max-w-2xl leading-relaxed">
           {{ t.disclaimer }}
         </p>
+        <p class="text-xs text-slate/70">
+          {{ t.madeBy }}
+          <a
+            href="https://ahmadahmad.aaweb.fr"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="underline decoration-line hover:text-ink-600 hover:decoration-ink-600 transition-colors"
+          >Ahmad Ahmad</a>
+        </p>
       </div>
     </footer>
   </div>
