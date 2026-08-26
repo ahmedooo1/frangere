@@ -2,6 +2,7 @@ import { prisma } from './prisma'
 import { fetchFeedItems, type FeedItem } from './rss'
 import { processArticleWithAi, getGeminiApiKeys, type CategoryKey } from './ai'
 import { fetchOgImage } from './images'
+import { fetchFullArticleText } from './article-content'
 
 export interface PipelineRunSummary {
   sourcesProcessed: number
@@ -69,9 +70,17 @@ export async function processFeedItem(params: {
     return
   }
 
+  // RSS <description> is usually a short teaser - the real detail (exact
+  // procedure, exceptions, penalties, legal references...) lives on the
+  // linked page. Prefer the full extracted text when it's genuinely richer
+  // than the teaser; fall back to the teaser on any fetch/parse failure or
+  // if extraction came back suspiciously short (nav/boilerplate mis-grab).
+  const fullText = await fetchFullArticleText(item.link)
+  const body = fullText && fullText.length > item.content.length ? fullText : item.content
+
   const result = await processArticleWithAi({
     title: item.title,
-    body: item.content,
+    body,
     sourceName,
     apiKeys,
     recentTitles
@@ -118,7 +127,7 @@ export async function processFeedItem(params: {
       sourceUrl: item.link,
       imageUrl,
       originalTitleFr: item.title,
-      originalBodyFr: item.content,
+      originalBodyFr: body,
       titleAr: result.titleAr,
       tldrAr: result.tldrAr,
       stepsAr: result.stepsAr,
